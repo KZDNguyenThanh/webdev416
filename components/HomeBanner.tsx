@@ -6,14 +6,14 @@ import { main_banner } from "@/images";
 const HomeBanner = () => {
   return (
     <Link
-      href={{ pathname: "/shop", query: { brand: "blue-archives" } }}
+      href={"/shop"}
       className="block rounded-lg overflow-hidden"
-      aria-label="Shop Blue Archives collection"
+      aria-label="Khám phá bàn phím cơ KEYNITY"
     >
       <div className="relative w-full">
         <Image
           src={main_banner}
-          alt="Blue Archives Lotte Cinema collaboration banner"
+          alt="KEYNITY - Bàn phím cơ & phụ kiện"
           className="w-full h-auto object-cover transition-transform duration-500 hover:scale-[1.01]"
           priority
         />

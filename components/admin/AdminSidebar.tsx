@@ -12,7 +12,7 @@ const AdminSidebar = () => {
     <aside className="w-full md:w-72 md:min-h-screen border-r bg-white">
       <div className="px-5 py-6 border-b">
         <p className="text-xs tracking-widest uppercase text-lightColor">
-          Aemeathshop
+          KEYNITY
         </p>
         <h2 className="text-xl font-bold mt-1">Admin Panel</h2>
       </div>

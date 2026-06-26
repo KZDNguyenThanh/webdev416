@@ -13,18 +13,18 @@ export const quickLinksData = [
   { title: "Help", href: "/help" },
 ];
 export const categoriesData = [
-  { title: "Plushies", href: "plushies" },
-  { title: "Keychain", href: "keychain" },
-  { title: "Sticker", href: "sticker" },
-  { title: "Acrylic Merch", href: "acrylic-merch" },
-  { title: "Pillow", href: "pillow" },
-  { title: "Others", href: "others" },
+  { title: "Bàn phím cơ", href: "plushies" },
+  { title: "Keycap", href: "keychain" },
+  { title: "Switch", href: "sticker" },
+  { title: "Kê tay", href: "acrylic-merch" },
+  { title: "Dây cáp", href: "pillow" },
+  { title: "Phụ kiện khác", href: "others" },
 ];
 export const productType = [
-  { title: "Plushies", value: "plushies" },
-  { title: "Keychain", value: "keychain" },
-  { title: "Sticker", value: "sticker" },
-  { title: "Acrylic Merch", value: "acrylic-merch" },
-  { title: "Pillow", value: "pillow" },
-  { title: "Others", value: "others" },
+  { title: "Bàn phím cơ", value: "plushies" },
+  { title: "Keycap", value: "keychain" },
+  { title: "Switch", value: "sticker" },
+  { title: "Kê tay", value: "acrylic-merch" },
+  { title: "Dây cáp", value: "pillow" },
+  { title: "Phụ kiện khác", value: "others" },
 ];

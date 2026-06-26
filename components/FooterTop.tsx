@@ -31,7 +31,7 @@ const data: ContactItemData[] = [
   },
   {
     title: "Email Us",
-    subtitle: "aemeathshop@gmail.com",
+    subtitle: "keynity.shop@gmail.com",
     icon: (
       <Mail className="h-5 w-5 text-gray-600 transition-colors group-hover:text-primary" />
     ),

@@ -18,8 +18,8 @@ const Footer = () => {
           <div className="space-y-4">
             <Logo />
             <SubText className="max-w-sm leading-6 text-darkColor/70">
-              Discover your new favorite plushies at Aemeath&apos;s Plushies
-              Shop.
+              KEYNITY - Bàn phím cơ và phụ kiện chính hãng cho mọi tín đồ gõ
+              phím.
             </SubText>
             <SocialMedia
               className="text-darkColor/60"
@@ -62,7 +62,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t py-5 text-center text-sm text-gray-600">
-          © {currentYear} Aemeath&apos;s Plushies Shop. All rights reserved.
+          © {currentYear} KEYNITY. All rights reserved.
         </div>
       </Container>
     </footer>

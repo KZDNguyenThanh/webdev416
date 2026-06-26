@@ -50,7 +50,7 @@ export default function EmptyCart() {
             Your cart is empty!
           </h2>
           <p className="text-gray-600">
-            How about grabbing some cute plushies?
+            Khám phá ngay những mẫu bàn phím cơ và phụ kiện tại KEYNITY!
           </p>
         </div>
 

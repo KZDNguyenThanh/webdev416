@@ -4,10 +4,11 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - Aemeath's Plushies Shop",
-    default: "Aemeath's Plushies Shop",
+    template: "%s - KEYNITY",
+    default: "KEYNITY - Bàn phím cơ & phụ kiện",
   },
-  description: "It's time to buy some chubby lung!",
+  description:
+    "KEYNITY - Cửa hàng bàn phím cơ và phụ kiện chính hãng: keycap, switch, kê tay, dây cáp và nhiều hơn nữa.",
 };
 
 export default function RootLayout({
