@@ -51,10 +51,9 @@ async function seedUsers() {
       userId: customer.id,
       name: "Demo Customer",
       email: customer.email,
+      phone: "0900000000",
       line1: "123 Main St",
-      city: "Phnom Penh",
-      state: "Phnom Penh",
-      zip: "12000",
+      city: "Hồ Chí Minh",
       isDefault: true,
     },
     create: {
@@ -62,10 +61,9 @@ async function seedUsers() {
       userId: customer.id,
       name: "Demo Customer",
       email: customer.email,
+      phone: "0900000000",
       line1: "123 Main St",
-      city: "Phnom Penh",
-      state: "Phnom Penh",
-      zip: "12000",
+      city: "Hồ Chí Minh",
       isDefault: true,
     },
   });
@@ -275,93 +273,6 @@ async function seedCatalog() {
 }
 
 async function seedContent() {
-  const author = await prisma.author.upsert({
-    where: { slug: "aemeath-editor" },
-    update: {
-      name: "Aemeath Editorial",
-      imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800",
-      bio: [
-        {
-          _type: "block",
-          children: [{ _type: "span", text: "Official editorial team." }],
-        },
-      ],
-    },
-    create: {
-      name: "Aemeath Editorial",
-      slug: "aemeath-editor",
-      imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800",
-      bio: [
-        {
-          _type: "block",
-          children: [{ _type: "span", text: "Official editorial team." }],
-        },
-      ],
-    },
-  });
-
-  const blogCategories = [
-    { title: "Buying Guides", slug: "buying-guides", description: "How to choose the right products." },
-    { title: "Home Tips", slug: "home-tips", description: "Tips for a smarter and comfortable home." },
-  ];
-
-  for (const category of blogCategories) {
-    await prisma.blogCategory.upsert({
-      where: { slug: category.slug },
-      update: category,
-      create: category,
-    });
-  }
-
-  const guideCategory = await prisma.blogCategory.findUnique({ where: { slug: "buying-guides" } });
-  const tipsCategory = await prisma.blogCategory.findUnique({ where: { slug: "home-tips" } });
-
-  const blog = await prisma.blog.upsert({
-    where: { slug: "best-gadgets-for-modern-homes" },
-    update: {
-      title: "Best Gadgets for Modern Homes in 2026",
-      authorId: author.id,
-      isLatest: true,
-      mainImageUrl: "https://images.unsplash.com/photo-1558002038-1055907df827?w=1200",
-      body: [
-        {
-          _type: "block",
-          style: "normal",
-          children: [{ _type: "span", text: "Explore our top gadget picks for better comfort and productivity." }],
-        },
-      ],
-      publishedAt: new Date(),
-    },
-    create: {
-      title: "Best Gadgets for Modern Homes in 2026",
-      slug: "best-gadgets-for-modern-homes",
-      authorId: author.id,
-      isLatest: true,
-      mainImageUrl: "https://images.unsplash.com/photo-1558002038-1055907df827?w=1200",
-      body: [
-        {
-          _type: "block",
-          style: "normal",
-          children: [{ _type: "span", text: "Explore our top gadget picks for better comfort and productivity." }],
-        },
-      ],
-      publishedAt: new Date(),
-    },
-  });
-
-  await prisma.blogOnCategory.deleteMany({ where: { blogId: blog.id } });
-
-  const categoryLinks = [guideCategory?.id, tipsCategory?.id]
-    .filter(Boolean)
-    .map((categoryId) => ({ blogId: blog.id, categoryId }));
-
-  if (categoryLinks.length > 0) {
-    await prisma.blogOnCategory.createMany({
-      data: categoryLinks,
-      skipDuplicates: true,
-    });
-  }
-
   await prisma.page.upsert({
     where: { slug: "about" },
     update: {
@@ -418,14 +329,13 @@ async function main() {
   await seedCatalog();
   await seedContent();
 
-  const [users, products, blogs, categories] = await Promise.all([
+  const [users, products, categories] = await Promise.all([
     prisma.user.count(),
     prisma.product.count(),
-    prisma.blog.count(),
     prisma.category.count(),
   ]);
 
-  console.log("✅ Seed completed", { users, products, blogs, categories });
+  console.log("✅ Seed completed", { users, products, categories });
   console.log("Admin login: admin@aemeathshop.com / Admin@12345");
 }
 

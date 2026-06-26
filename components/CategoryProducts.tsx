@@ -3,7 +3,7 @@ import type { CategoryDTO, ProductDTO } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { dataClient } from "@/lib/data/client";
+import { getCategoryProducts } from "@/actions/catalog";
 import { AnimatePresence, motion } from "motion/react";
 import { Loader2 } from "lucide-react";
 import NoProductAvailable from "./NoProductAvailable";
@@ -27,11 +27,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
   const fetchProducts = useCallback(async (categorySlug: string) => {
     setLoading(true);
     try {
-      const query = `
-        *[_type == 'product' && references(*[_type == "category" && slug.current == $categorySlug]._id)] | order(name asc){
-        ...,"categories": categories[]->title}
-      `;
-      const data = await dataClient.fetch<ProductDTO[]>(query, { categorySlug });
+      const data = await getCategoryProducts(categorySlug);
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);

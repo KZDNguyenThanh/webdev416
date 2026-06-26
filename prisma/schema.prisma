@@ -134,10 +134,11 @@ model Address {
   userId    String
   name      String
   email     String?
+  phone     String?
   line1     String
   city      String
-  state     String
-  zip       String
+  state     String?
+  zip       String?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

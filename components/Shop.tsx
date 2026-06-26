@@ -7,7 +7,7 @@ import CategoryList from "./shop/CategoryList";
 import { useSearchParams } from "next/navigation";
 import BrandList from "./shop/BrandList";
 import PriceList from "./shop/PriceList";
-import { dataClient } from "@/lib/data/client";
+import { getShopProducts } from "@/actions/catalog";
 import { Loader2 } from "lucide-react";
 import NoProductAvailable from "./NoProductAvailable";
 import ProductCard from "./ProductCard";
@@ -39,23 +39,13 @@ const Shop = ({ categories, brands }: Props) => {
         minPrice = min;
         maxPrice = max;
       }
-      const query = `
-      *[_type == 'product' 
-        && (!defined($selectedCategory) || references(*[_type == "category" && slug.current == $selectedCategory]._id))
-        && (!defined($selectedBrand) || references(*[_type == "brand" && slug.current == $selectedBrand]._id))
-        && price >= $minPrice && price <= $maxPrice
-      ] 
-      | order(name asc) {
-        ...,"categories": categories[]->title
-      }
-    `;
-      const data = await dataClient.fetch(query, {
+      const data = await getShopProducts({
         selectedCategory,
         selectedBrand,
         minPrice,
         maxPrice,
       });
-      setProducts(data as ProductDTO[]);
+      setProducts(data);
     } catch (error) {
       console.log("Shop product fetching Error", error);
     } finally {

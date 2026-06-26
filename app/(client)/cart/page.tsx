@@ -4,17 +4,16 @@ import {
   createCheckoutSession,
   Metadata,
 } from "@/actions/createCheckoutSession";
+import AddressSelector from "@/components/AddressSelector";
 import Container from "@/components/Container";
 import EmptyCart from "@/components/EmptyCart";
 import NoAccess from "@/components/NoAccess";
+import PaymentDialog from "@/components/PaymentDialog";
 import PriceFormatter from "@/components/PriceFormatter";
 import ProductSideMenu from "@/components/ProductSideMenu";
 import QuantityButtons from "@/components/QuantityButtons";
 import Title from "@/components/Title";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -23,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { AddressDTO } from "@/lib/types";
-import { dataClient } from "@/lib/data/client";
+import { getMyAddresses } from "@/actions/catalog";
 import { getImageUrl } from "@/lib/image";
 import useStore from "@/store";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -44,16 +43,19 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const groupedItems = useStore((state) => state.getGroupedItems());
   const { isSignedIn, user } = useAuthUser();
-  const [addresses, setAddresses] = useState<AddressDTO[] | null>(null);
+  const [addresses, setAddresses] = useState<AddressDTO[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<AddressDTO | null>(
     null,
   );
+  const [payment, setPayment] = useState<{
+    orderNumber: string;
+    amount: number;
+    redirectUrl: string;
+  } | null>(null);
 
   const fetchAddresses = async () => {
-    setLoading(true);
     try {
-      const query = `*[_type=="address"] | order(publishedAt desc)`;
-      const data = await dataClient.fetch<AddressDTO[]>(query);
+      const data = await getMyAddresses();
       setAddresses(data);
       const defaultAddress = data.find((addr) => addr.default);
       if (defaultAddress) {
@@ -63,13 +65,16 @@ const CartPage = () => {
       }
     } catch (error) {
       console.log("Addresses fetching error:", error);
-    } finally {
-      setLoading(false);
     }
   };
   useEffect(() => {
     fetchAddresses();
   }, []);
+
+  const handleAddressCreated = (address: AddressDTO) => {
+    setAddresses((prev) => [address, ...prev]);
+    setSelectedAddress(address);
+  };
   const handleResetCart = () => {
     const confirmed = window.confirm(
       "Bạn có chắc muốn xóa toàn bộ giỏ hàng?",
@@ -81,19 +86,24 @@ const CartPage = () => {
   };
 
   const handleCheckout = async () => {
+    if (!selectedAddress) {
+      toast.error("Vui lòng chọn địa chỉ giao hàng.");
+      return;
+    }
     setLoading(true);
     try {
       const metadata: Metadata = {
-        orderNumber: crypto.randomUUID(),
         customerName: user?.fullName ?? "Unknown",
         customerEmail: user?.email ?? "Unknown",
         userId: user?.id,
-        address: selectedAddress,
+        addressId: selectedAddress.id,
       };
-      const checkoutUrl = await createCheckoutSession(groupedItems, metadata);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      }
+      const result = await createCheckoutSession(groupedItems, metadata);
+      setPayment({
+        orderNumber: result.orderNumber,
+        amount: result.totalAmount,
+        redirectUrl: result.redirectUrl,
+      });
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Không thể đặt hàng. Vui lòng thử lại.");
@@ -245,47 +255,14 @@ const CartPage = () => {
                         </Button>
                       </div>
                     </div>
-                    {addresses && (
-                      <div className="bg-white rounded-md mt-5">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Địa chỉ giao hàng</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <RadioGroup
-                              defaultValue={
-                                addresses?.find((addr) => addr.default)?.id
-                              }
-                            >
-                              {addresses?.map((address) => (
-                                <div
-                                  key={address?.id}
-                                  onClick={() => setSelectedAddress(address)}
-                                  className={`flex items-center space-x-2 mb-4 cursor-pointer ${selectedAddress?.id === address?.id && "text-shop_dark_green"}`}
-                                >
-                                  <RadioGroupItem value={address?.id} />
-                                  <Label
-                                    htmlFor={`address-${address?.id}`}
-                                    className="grid gap-1.5 flex-1"
-                                  >
-                                    <span className="font-semibold">
-                                      {address?.name}
-                                    </span>
-                                    <span className="text-sm text-black/60">
-                                      {address.address}, {address.city},{" "}
-                                      {address.state} {address.zip}
-                                    </span>
-                                  </Label>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                            <Button variant="outline" className="w-full mt-4">
-                              Thêm địa chỉ mới
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    )}
+                    <div className="bg-white rounded-md mt-5">
+                      <AddressSelector
+                        addresses={addresses}
+                        selected={selectedAddress}
+                        onSelect={setSelectedAddress}
+                        onCreated={handleAddressCreated}
+                      />
+                    </div>
                   </div>
                 </div>
                 {/* Order summary for mobile view */}
@@ -330,6 +307,14 @@ const CartPage = () => {
         </Container>
       ) : (
         <NoAccess />
+      )}
+      {payment && (
+        <PaymentDialog
+          open
+          orderNumber={payment.orderNumber}
+          amount={payment.amount}
+          redirectUrl={payment.redirectUrl}
+        />
       )}
     </div>
   );

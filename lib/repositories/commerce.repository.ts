@@ -1,7 +1,7 @@
 import { ProductStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { toBrandDTO, toOrderDTO, toProductDTO } from "@/lib/mappers";
-import type { BrandDTO, OrderDTO, ProductDTO } from "@/lib/types";
+import { toOrderDTO, toProductDTO } from "@/lib/mappers";
+import type { OrderDTO, ProductDTO } from "@/lib/types";
 
 const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
 
@@ -61,19 +61,6 @@ export async function getProductBySlug(slug: string): Promise<ProductDTO | null>
     null,
   );
   return row ? toProductDTO(row) : null;
-}
-
-export async function getBrandByProductSlug(
-  slug: string,
-): Promise<BrandDTO | null> {
-  return withDatabase(async () => {
-    const product = await prisma.product.findUnique({
-      where: { slug },
-      include: { brand: true },
-    });
-
-    return product?.brand ? toBrandDTO(product.brand) : null;
-  }, null);
 }
 
 export async function getMyOrders(userId: string): Promise<OrderDTO[]> {

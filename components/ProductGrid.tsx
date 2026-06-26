@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence } from "motion/react";
-import { dataClient } from "@/lib/data/client";
+import { getCategoryProducts } from "@/actions/catalog";
 import NoProductAvailable from "./NoProductAvailable";
 import { Loader2 } from "lucide-react";
 import Container from "./Container";
@@ -20,12 +20,8 @@ const ProductGrid = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const query = `*[_type == "product" && references(*[_type == "category" && slug.current == $categorySlug]._id)] | order(name asc){
-  ...,"categories": categories[]->title
-}`;
-        const params = { categorySlug: selectedTab };
-        const response = await dataClient.fetch(query, params);
-        setProducts(response as ProductDTO[]);
+        const response = await getCategoryProducts(selectedTab);
+        setProducts(response);
       } catch (error) {
         console.log("Product fetching Error", error);
       } finally {

@@ -1,14 +1,15 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { generateOrderCode } from "@/lib/orderCode";
 import type { AddressDTO } from "@/lib/types";
 import { CartItem } from "@/store";
 
 export interface Metadata {
-  orderNumber: string;
   customerName: string;
   customerEmail: string;
   userId?: string;
+  addressId?: string;
   address?: AddressDTO | null;
 }
 
@@ -17,10 +18,16 @@ export interface GroupedCartItems {
   quantity: number;
 }
 
+export interface CheckoutResult {
+  orderNumber: string;
+  totalAmount: number;
+  redirectUrl: string;
+}
+
 export async function createCheckoutSession(
   items: GroupedCartItems[],
   metadata: Metadata,
-) {
+): Promise<CheckoutResult> {
   try {
     if (!items?.length) {
       throw new Error("Cart is empty");
@@ -78,19 +85,33 @@ export async function createCheckoutSession(
       ),
     );
     const discountAmount = Math.max(subtotal - totalAmount, 0);
+    const orderNumber = generateOrderCode();
 
     await prisma.$transaction(async (transaction) => {
       let addressId: string | undefined;
-      if (metadata.userId && metadata.address) {
+      if (metadata.userId && metadata.addressId) {
+        // Reuse an already-saved address (verify ownership) instead of
+        // creating a duplicate row on every checkout.
+        const existing = await transaction.address.findUnique({
+          where: { id: metadata.addressId },
+        });
+        if (existing && existing.userId === metadata.userId) {
+          addressId = existing.id;
+        }
+      }
+
+      if (!addressId && metadata.userId && metadata.address) {
+        // Fallback: an address payload without a saved id — persist it.
         const savedAddress = await transaction.address.create({
           data: {
             userId: metadata.userId,
             name: metadata.address.name || "Shipping Address",
             email: metadata.address.email || normalizedEmail,
+            phone: metadata.address.phone || null,
             line1: metadata.address.address || "",
             city: metadata.address.city || "",
-            state: metadata.address.state || "",
-            zip: metadata.address.zip || "",
+            state: metadata.address.state || null,
+            zip: metadata.address.zip || null,
             isDefault: Boolean(metadata.address.default),
           },
         });
@@ -99,7 +120,7 @@ export async function createCheckoutSession(
 
       const order = await transaction.order.create({
         data: {
-          orderNumber: metadata.orderNumber,
+          orderNumber,
           userId: metadata.userId,
           addressId,
           customerName: metadata.customerName || "Unknown",
@@ -162,7 +183,11 @@ export async function createCheckoutSession(
       return order;
     });
 
-    return `/success?orderNumber=${metadata.orderNumber}`;
+    return {
+      orderNumber,
+      totalAmount,
+      redirectUrl: `/success?orderNumber=${orderNumber}`,
+    };
   } catch (error) {
     console.error("Error creating internal order", error);
     throw error;

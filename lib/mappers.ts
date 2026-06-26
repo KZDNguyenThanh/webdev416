@@ -152,10 +152,11 @@ type RawAddress = {
   id: string;
   name: string;
   email: string | null;
+  phone: string | null;
   line1: string;
   city: string;
-  state: string;
-  zip: string;
+  state: string | null;
+  zip: string | null;
   isDefault: boolean;
 };
 
@@ -164,10 +165,11 @@ export function toAddressDTO(address: RawAddress): AddressDTO {
     id: address.id,
     name: address.name,
     email: address.email ?? null,
+    phone: address.phone ?? null,
     address: address.line1,
     city: address.city,
-    state: address.state,
-    zip: address.zip,
+    state: address.state ?? null,
+    zip: address.zip ?? null,
     default: address.isDefault,
   };
 }

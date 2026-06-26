@@ -8,6 +8,7 @@ import PriceView from "./PriceView";
 import Title from "./Title";
 import ProductSideMenu from "./ProductSideMenu";
 import AddToCartButton from "./AddToCartButton";
+import BuyNowButton from "./BuyNowButton";
 
 const ProductCard = ({ product }: { product: ProductDTO }) => {
   const productStatus = (product?.status || "").toLowerCase();
@@ -96,7 +97,10 @@ const ProductCard = ({ product }: { product: ProductDTO }) => {
           discount={product?.discount}
           className="text-sm"
         />
-        <AddToCartButton product={product} className="w-36 rounded-full" />
+        <div className="flex flex-col gap-2">
+          <AddToCartButton product={product} className="rounded-full" />
+          <BuyNowButton product={product} className="rounded-full" />
+        </div>
       </div>
     </div>
   );

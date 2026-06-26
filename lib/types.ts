@@ -70,10 +70,11 @@ export type AddressDTO = {
   id: string;
   name: string;
   email: string | null;
+  phone: string | null;
   address: string;
   city: string;
-  state: string;
-  zip: string;
+  state: string | null;
+  zip: string | null;
   default: boolean;
 };
 

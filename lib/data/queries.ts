@@ -3,7 +3,6 @@ import {
   getCategories as getCategoriesRepo,
 } from "@/lib/repositories/content.repository";
 import {
-  getBrandByProductSlug,
   getDealProducts as getDealProductsRepo,
   getMyOrders as getMyOrdersRepo,
   getProductBySlug as getProductBySlugRepo,
@@ -46,17 +45,6 @@ const getProductBySlug = async (slug: string) => {
   }
 };
 
-const getBrand = async (slug: string) => {
-  try {
-    const brand = await getBrandByProductSlug(slug);
-    if (!brand) return null;
-    return [{ brandName: brand.title }];
-  } catch (error) {
-    console.error("Error fetching brand by product slug:", error);
-    return null;
-  }
-};
-
 const getProductsByBrandSlug = async (slug: string) => {
   try {
     return await getProductsByBrandSlugRepo(slug);
@@ -80,7 +68,6 @@ export {
   getAllBrands,
   getDealProducts,
   getProductBySlug,
-  getBrand,
   getProductsByBrandSlug,
   getMyOrders,
 };

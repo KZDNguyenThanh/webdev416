@@ -5,7 +5,13 @@ import { verifyAuthToken } from "@/lib/auth/jwt";
 import { getToken } from "next-auth/jwt";
 import { getAuthSecret } from "@/lib/auth/secret";
 
-const protectedRoutes = ["/orders", "/wishlist", "/cart", "/admin"];
+const protectedRoutes = [
+  "/orders",
+  "/wishlist",
+  "/cart",
+  "/checkout",
+  "/admin",
+];
 
 export default async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

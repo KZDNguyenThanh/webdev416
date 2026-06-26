@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Address" ADD COLUMN     "phone" TEXT,
+ALTER COLUMN "state" DROP NOT NULL,
+ALTER COLUMN "zip" DROP NOT NULL;

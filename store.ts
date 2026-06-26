@@ -17,6 +17,11 @@ interface StoreState {
   getSubTotalPrice: () => number;
   getItemCount: (productId: string) => number;
   getGroupedItems: () => CartItem[];
+  // "Mua ngay" (Buy now): a transient single item used by the /checkout page.
+  // Not persisted to localStorage — it only lives for the current navigation.
+  buyNowItem: CartItem | null;
+  setBuyNowItem: (product: ProductDTO, quantity?: number) => void;
+  clearBuyNowItem: () => void;
   //   // favorite
   favoriteProduct: ProductDTO[];
   addToFavorite: (product: ProductDTO) => Promise<void>;
@@ -88,6 +93,10 @@ const useStore = create<StoreState>()(
         return item ? item.quantity : 0;
       },
       getGroupedItems: () => get().items,
+      buyNowItem: null,
+      setBuyNowItem: (product, quantity = 1) =>
+        set({ buyNowItem: { product, quantity } }),
+      clearBuyNowItem: () => set({ buyNowItem: null }),
       addToFavorite: (product: ProductDTO) => {
         return new Promise<void>((resolve) => {
           set((state: StoreState) => {
@@ -118,6 +127,23 @@ const useStore = create<StoreState>()(
     }),
     {
       name: "cart-store",
+      version: 1,
+      partialize: (state) => ({
+        items: state.items,
+        favoriteProduct: state.favoriteProduct,
+      }),
+      // Pre-refactor data used the Sanity shape (`_id`, `slug:{current}`,
+      // `images:[{asset:{url}}]`). It's incompatible with ProductDTO, so drop
+      // any persisted state from older versions instead of trying to map it.
+      migrate: (persistedState, version) => {
+        if (version < 1) {
+          return { items: [], favoriteProduct: [] };
+        }
+        return persistedState as {
+          items: CartItem[];
+          favoriteProduct: ProductDTO[];
+        };
+      },
     }
   )
 );
