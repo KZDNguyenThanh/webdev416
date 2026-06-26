@@ -1,0 +1,3 @@
+# No Python dependencies are required for this project.
+# This repository is a Next.js (Node.js) app.
+# Keep this file so `pip install -r requirements.txt` runs without "file not found".

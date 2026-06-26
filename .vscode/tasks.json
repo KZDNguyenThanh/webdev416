@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "noop",
+			"type": "shell",
+			"command": "echo planning"
+		},
+		{
+			"label": "lint-check",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"lint"
+			]
+		},
+		{
+			"label": "build-check",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			]
+		}
+	]
+}
