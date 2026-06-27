@@ -7,7 +7,12 @@ import {
 import AddressSelector from "@/components/AddressSelector";
 import Container from "@/components/Container";
 import EmptyCart from "@/components/EmptyCart";
-import NoAccess from "@/components/NoAccess";
+import GuestCheckoutForm, {
+  emptyGuestInfo,
+  validateGuestInfo,
+  type GuestErrors,
+  type GuestInfo,
+} from "@/components/GuestCheckoutForm";
 import PaymentDialog from "@/components/PaymentDialog";
 import PriceFormatter from "@/components/PriceFormatter";
 import ProductSideMenu from "@/components/ProductSideMenu";
@@ -42,11 +47,13 @@ const CartPage = () => {
   } = useStore();
   const [loading, setLoading] = useState(false);
   const groupedItems = useStore((state) => state.getGroupedItems());
-  const { isSignedIn, user } = useAuthUser();
+  const { isSignedIn, user, loading: authLoading } = useAuthUser();
   const [addresses, setAddresses] = useState<AddressDTO[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<AddressDTO | null>(
     null,
   );
+  const [guestInfo, setGuestInfo] = useState<GuestInfo>(emptyGuestInfo);
+  const [guestErrors, setGuestErrors] = useState<GuestErrors>({});
   const [payment, setPayment] = useState<{
     orderNumber: string;
     amount: number;
@@ -75,6 +82,23 @@ const CartPage = () => {
     setAddresses((prev) => [address, ...prev]);
     setSelectedAddress(address);
   };
+  const handleAddressUpdated = (updated: AddressDTO) => {
+    setAddresses((prev) =>
+      prev.map((a) =>
+        a.id === updated.id ? updated : updated.default ? { ...a, default: false } : a,
+      ),
+    );
+    setSelectedAddress((cur) => (cur?.id === updated.id ? updated : cur));
+  };
+  const handleAddressDeleted = (id: string) => {
+    setAddresses((prev) => {
+      const next = prev.filter((a) => a.id !== id);
+      setSelectedAddress((cur) =>
+        cur && cur.id !== id ? cur : next.find((a) => a.default) ?? next[0] ?? null,
+      );
+      return next;
+    });
+  };
   const handleResetCart = () => {
     const confirmed = window.confirm(
       "Bạn có chắc muốn xóa toàn bộ giỏ hàng?",
@@ -86,18 +110,44 @@ const CartPage = () => {
   };
 
   const handleCheckout = async () => {
-    if (!selectedAddress) {
-      toast.error("Vui lòng chọn địa chỉ giao hàng.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const metadata: Metadata = {
+    let metadata: Metadata;
+    if (isSignedIn) {
+      if (!selectedAddress) {
+        toast.error("Vui lòng chọn địa chỉ giao hàng.");
+        return;
+      }
+      metadata = {
         customerName: user?.fullName ?? "Unknown",
         customerEmail: user?.email ?? "Unknown",
         userId: user?.id,
         addressId: selectedAddress.id,
       };
+    } else {
+      const errors = validateGuestInfo(guestInfo);
+      setGuestErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        toast.error("Vui lòng kiểm tra lại thông tin giao hàng.");
+        return;
+      }
+      metadata = {
+        customerName: guestInfo.name.trim(),
+        customerEmail: guestInfo.email.trim(),
+        address: {
+          id: "",
+          name: guestInfo.name.trim(),
+          phone: guestInfo.phone.trim(),
+          email: guestInfo.email.trim() || null,
+          address: guestInfo.address.trim(),
+          city: guestInfo.city.trim(),
+          state: null,
+          zip: null,
+          default: false,
+        },
+      };
+    }
+
+    setLoading(true);
+    try {
       const result = await createCheckoutSession(groupedItems, metadata);
       setPayment({
         orderNumber: result.orderNumber,
@@ -113,10 +163,9 @@ const CartPage = () => {
   };
   return (
     <div className="bg-gray-50 pb-52 md:pb-10">
-      {isSignedIn ? (
-        <Container>
-          {groupedItems?.length ? (
-            <>
+      <Container>
+        {groupedItems?.length ? (
+          <>
               <div className="flex items-center gap-2 py-5">
                 <ShoppingBag className="text-darkColor" />
                 <Title>Giỏ hàng</Title>
@@ -256,12 +305,22 @@ const CartPage = () => {
                       </div>
                     </div>
                     <div className="bg-white rounded-md mt-5">
-                      <AddressSelector
-                        addresses={addresses}
-                        selected={selectedAddress}
-                        onSelect={setSelectedAddress}
-                        onCreated={handleAddressCreated}
-                      />
+                      {authLoading ? null : isSignedIn ? (
+                        <AddressSelector
+                          addresses={addresses}
+                          selected={selectedAddress}
+                          onSelect={setSelectedAddress}
+                          onCreated={handleAddressCreated}
+                          onUpdated={handleAddressUpdated}
+                          onDeleted={handleAddressDeleted}
+                        />
+                      ) : (
+                        <GuestCheckoutForm
+                          value={guestInfo}
+                          onChange={setGuestInfo}
+                          errors={guestErrors}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -304,10 +363,7 @@ const CartPage = () => {
           ) : (
             <EmptyCart />
           )}
-        </Container>
-      ) : (
-        <NoAccess />
-      )}
+      </Container>
       {payment && (
         <PaymentDialog
           open

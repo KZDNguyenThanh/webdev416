@@ -84,6 +84,48 @@ export async function createAddress(
   return toAddressDTO(created);
 }
 
+export interface UpdateAddressInput extends CreateAddressInput {
+  id: string;
+}
+
+export async function updateAddress(
+  input: UpdateAddressInput,
+): Promise<AddressDTO> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Bạn cần đăng nhập.");
+
+  const existing = await prisma.address.findUnique({ where: { id: input.id } });
+  if (!existing || existing.userId !== user.id) {
+    throw new Error("Không tìm thấy địa chỉ.");
+  }
+
+  const name = input.name?.trim();
+  const phone = input.phone?.trim();
+  const line1 = input.address?.trim();
+  const city = input.city?.trim();
+
+  if (!name || !phone || !line1 || !city) {
+    throw new Error("Vui lòng nhập đầy đủ thông tin địa chỉ.");
+  }
+
+  const isDefault = Boolean(input.isDefault);
+
+  const updated = await prisma.$transaction(async (tx) => {
+    if (isDefault) {
+      await tx.address.updateMany({
+        where: { userId: user.id, isDefault: true, id: { not: input.id } },
+        data: { isDefault: false },
+      });
+    }
+    return tx.address.update({
+      where: { id: input.id },
+      data: { name, phone, line1, city, isDefault },
+    });
+  });
+
+  return toAddressDTO(updated);
+}
+
 export async function setDefaultAddress(addressId: string): Promise<void> {
   const user = await getCurrentUser();
   if (!user) throw new Error("Bạn cần đăng nhập.");

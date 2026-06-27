@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed.mjs"
+    "prisma:seed": "node prisma/seed.mjs",
+    "prisma:categories": "node prisma/update-categories.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

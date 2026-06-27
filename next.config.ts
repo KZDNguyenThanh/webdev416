@@ -8,11 +8,11 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Admins paste arbitrary product image URLs (bulk add), so allow any remote
+    // host instead of maintaining a per-store allowlist.
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" },
     ],
   },
 };

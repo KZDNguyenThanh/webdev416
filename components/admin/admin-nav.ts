@@ -1,5 +1,6 @@
 import {
   FileText,
+  Images,
   LayoutDashboard,
   Package,
   Receipt,
@@ -34,6 +35,12 @@ export const adminNavItems: AdminNavItem[] = [
     href: "/admin/brands",
     icon: Tag,
     description: "Tạo và quản lý thương hiệu",
+  },
+  {
+    title: "Banner",
+    href: "/admin/banners",
+    icon: Images,
+    description: "Ảnh quảng bá trang chủ",
   },
   {
     title: "Đơn hàng",

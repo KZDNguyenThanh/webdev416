@@ -17,7 +17,7 @@ interface Props {
 const PriceList = ({ selectedPrice, setSelectedPrice }: Props) => {
   return (
     <div className="w-full bg-white p-5">
-      <Title className="text-base font-black">Price</Title>
+      <Title className="text-base font-black">Giá</Title>
       <RadioGroup className="mt-2 space-y-1" value={selectedPrice || ""}>
         {priceArray?.map((price, index) => (
           <div
@@ -44,7 +44,7 @@ const PriceList = ({ selectedPrice, setSelectedPrice }: Props) => {
           onClick={() => setSelectedPrice(null)}
           className="text-sm font-medium mt-2 underline underline-offset-2 decoration-[1px] hover:text-shop_dark_green hoverEffect"
         >
-          Reset selection
+          Bỏ chọn
         </button>
       )}
     </div>

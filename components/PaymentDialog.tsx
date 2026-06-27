@@ -77,8 +77,8 @@ const PaymentDialog = ({ open, orderNumber, amount, redirectUrl }: Props) => {
         <DialogHeader>
           <DialogTitle>Thông tin thanh toán</DialogTitle>
           <DialogDescription>
-            Vui lòng chuyển khoản theo thông tin bên dưới. Đơn hàng sẽ được xử lý
-            sau khi chúng tôi nhận được thanh toán.
+            Vui lòng chuyển khoản theo thông tin bên dưới. Đơn hàng sẽ được xử
+            lý sau khi chúng tôi nhận được thanh toán.
           </DialogDescription>
         </DialogHeader>
 
@@ -124,7 +124,7 @@ const PaymentDialog = ({ open, orderNumber, amount, redirectUrl }: Props) => {
             window.location.href = redirectUrl;
           }}
         >
-          Tôi đã chuyển khoản
+          Kiểm tra thanh toán
         </Button>
       </DialogContent>
     </Dialog>

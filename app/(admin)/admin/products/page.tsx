@@ -15,6 +15,7 @@ import {
 } from "@/app/(admin)/admin/actions";
 import Image from "next/image";
 import PriceFormatter from "@/components/PriceFormatter";
+import BulkProductForm from "@/components/admin/BulkProductForm";
 
 export default async function AdminProductsPage() {
   const [products, brands, categories] = await Promise.all([
@@ -175,6 +176,28 @@ export default async function AdminProductsPage() {
               Create Product
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Thêm nhanh nhiều sản phẩm</CardTitle>
+          <CardDescription>
+            Nhập nhiều sản phẩm cùng lúc. Ảnh có thể dán link hoặc tải file cho
+            từng dòng. Dòng để trống sẽ được bỏ qua.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BulkProductForm
+            brands={brands.map((brand) => ({
+              id: brand.id,
+              title: brand.title,
+            }))}
+            categories={categories.map((category) => ({
+              id: category.id,
+              title: category.title,
+            }))}
+          />
         </CardContent>
       </Card>
 

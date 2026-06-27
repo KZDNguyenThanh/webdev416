@@ -5,17 +5,18 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-poppins: "Poppins", sans-serif;
+  --font-poppins: var(--font-be-vietnam-pro), sans-serif;
+  --font-sans: var(--font-be-vietnam-pro), sans-serif;
 
-  /* ---------- Brand palette (pink / magenta) ---------- */
-  --color-brand: #b63680; /* primary action — buttons, active states */
-  --color-brand-dark: #9f2f72; /* hover / emphasis / headings */
-  --color-brand-deep: #c9498b; /* secondary deep pink */
-  --color-brand-accent: #f59ac1; /* accents / highlights */
-  --color-brand-soft: #fde8f2; /* soft tinted surfaces */
-  --color-brand-muted: #ffd1e5; /* muted accent */
-  --color-brand-bg: #fff3f9; /* lightest section background */
-  --color-brand-bg-alt: #fff0f7; /* alternate section background (deals) */
+  /* ---------- Brand palette (black / neutral) ---------- */
+  --color-brand: #1f1f1f; /* primary action — buttons, active states */
+  --color-brand-dark: #000000; /* hover / emphasis / headings / price */
+  --color-brand-deep: #3f3f46; /* secondary — nav hover, active pills */
+  --color-brand-accent: #52525b; /* accents / highlights */
+  --color-brand-soft: #f4f4f5; /* soft tinted surfaces */
+  --color-brand-muted: #e4e4e7; /* muted accent */
+  --color-brand-bg: #f5f5f5; /* lightest section background / image frames */
+  --color-brand-bg-alt: #ececec; /* alternate section background (deals) */
 
   /* ---------- Neutrals ---------- */
   --color-darkColor: #151515;
@@ -40,7 +41,7 @@
 }
 
 :root {
-  --font-poppins: "Poppins", sans-serif;
+  --font-poppins: var(--font-be-vietnam-pro), sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

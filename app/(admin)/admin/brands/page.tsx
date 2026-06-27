@@ -41,6 +41,11 @@ export default async function AdminBrandsPage() {
               placeholder="Description"
             />
             <Input
+              name="imageUrl"
+              placeholder="Link ảnh (tùy chọn)"
+              className="md:col-span-2"
+            />
+            <Input
               type="file"
               name="image"
               accept="image/*"
@@ -50,6 +55,10 @@ export default async function AdminBrandsPage() {
               Create Brand
             </Button>
           </form>
+          <p className="mt-2 text-xs text-lightColor">
+            Có thể dán link ảnh hoặc tải file. Nếu chọn cả hai, file tải lên được
+            ưu tiên.
+          </p>
         </CardContent>
       </Card>
 
@@ -71,6 +80,11 @@ export default async function AdminBrandsPage() {
                 name="description"
                 defaultValue={brand.description || ""}
                 className="md:col-span-2"
+              />
+              <Input
+                name="imageUrl"
+                defaultValue={brand.imageUrl || ""}
+                placeholder="Link ảnh"
               />
               <Input
                 type="file"

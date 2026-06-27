@@ -1,6 +1,6 @@
 "use client";
 
-import { createAddress } from "@/actions/catalog";
+import { createAddress, updateAddress } from "@/actions/catalog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -20,22 +20,29 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 interface Props {
-  onCreated: (address: AddressDTO) => void;
+  onSaved: (address: AddressDTO) => void;
+  editing?: AddressDTO | null;
+  trigger?: React.ReactNode;
 }
 
-const AddressForm = ({ onCreated }: Props) => {
+const buildForm = (editing?: AddressDTO | null) => ({
+  name: editing?.name ?? "",
+  phone: editing?.phone ?? "",
+  address: editing?.address ?? "",
+  city: editing?.city ?? "",
+  isDefault: editing?.default ?? false,
+});
+
+const AddressForm = ({ onSaved, editing, trigger }: Props) => {
+  const isEdit = Boolean(editing);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    city: "",
-    isDefault: false,
-  });
+  const [form, setForm] = useState(() => buildForm(editing));
 
-  const resetForm = () =>
-    setForm({ name: "", phone: "", address: "", city: "", isDefault: false });
+  const handleOpenChange = (next: boolean) => {
+    if (next) setForm(buildForm(editing)); // refresh fields each time it opens
+    setOpen(next);
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -45,13 +52,15 @@ const AddressForm = ({ onCreated }: Props) => {
     }
     setLoading(true);
     try {
-      const created = await createAddress(form);
-      onCreated(created);
-      toast.success("Đã lưu địa chỉ mới!");
-      resetForm();
+      const saved =
+        isEdit && editing
+          ? await updateAddress({ id: editing.id, ...form })
+          : await createAddress(form);
+      onSaved(saved);
+      toast.success(isEdit ? "Đã cập nhật địa chỉ!" : "Đã lưu địa chỉ mới!");
       setOpen(false);
     } catch (error) {
-      console.error("Create address error:", error);
+      console.error("Save address error:", error);
       toast.error("Không thể lưu địa chỉ. Vui lòng thử lại.");
     } finally {
       setLoading(false);
@@ -59,15 +68,17 @@ const AddressForm = ({ onCreated }: Props) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full mt-4">
-          <Plus className="mr-1 h-4 w-4" /> Thêm địa chỉ mới
-        </Button>
+        {trigger ?? (
+          <Button variant="outline" className="w-full mt-4">
+            <Plus className="mr-1 h-4 w-4" /> Thêm địa chỉ mới
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Thêm địa chỉ mới</DialogTitle>
+          <DialogTitle>{isEdit ? "Sửa địa chỉ" : "Thêm địa chỉ mới"}</DialogTitle>
           <DialogDescription>
             Nhập địa chỉ và thông tin liên lạc để giao hàng.
           </DialogDescription>
@@ -124,7 +135,7 @@ const AddressForm = ({ onCreated }: Props) => {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Đang lưu…" : "Lưu địa chỉ"}
+              {loading ? "Đang lưu…" : isEdit ? "Cập nhật" : "Lưu địa chỉ"}
             </Button>
           </DialogFooter>
         </form>

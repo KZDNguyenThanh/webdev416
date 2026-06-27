@@ -21,7 +21,7 @@ const SignIn = () => {
         href={loginHref}
         className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 font-semibold hover:text-shop_light_green hover:border-shop_light_green hoverEffect"
       >
-        Login
+        Đăng nhập
       </Link>
     </div>
   );

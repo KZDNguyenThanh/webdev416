@@ -33,7 +33,17 @@ export async function createCheckoutSession(
       throw new Error("Cart is empty");
     }
 
-    const normalizedEmail = metadata.customerEmail.trim().toLowerCase();
+    // Guest orders (no logged-in user) must still carry a recipient name and
+    // phone so the order is reachable for delivery.
+    if (!metadata.userId) {
+      const guestName = metadata.address?.name?.trim();
+      const guestPhone = metadata.address?.phone?.trim();
+      if (!guestName || !guestPhone) {
+        throw new Error("Vui lòng nhập họ tên và số điện thoại người nhận.");
+      }
+    }
+
+    const normalizedEmail = (metadata.customerEmail ?? "").trim().toLowerCase();
 
     const resolvedItems = await Promise.all(
       items.map(async (item) => {
@@ -100,11 +110,12 @@ export async function createCheckoutSession(
         }
       }
 
-      if (!addressId && metadata.userId && metadata.address) {
-        // Fallback: an address payload without a saved id — persist it.
+      if (!addressId && metadata.address) {
+        // Persist an address payload without a saved id. For a logged-in user
+        // this links to their account; for a guest checkout userId stays null.
         const savedAddress = await transaction.address.create({
           data: {
-            userId: metadata.userId,
+            userId: metadata.userId ?? null,
             name: metadata.address.name || "Shipping Address",
             email: metadata.address.email || normalizedEmail,
             phone: metadata.address.phone || null,

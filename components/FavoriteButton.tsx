@@ -30,8 +30,8 @@ const FavoriteButton = ({
       addToFavorite(product).then(() => {
         toast.success(
           existingProduct
-            ? "Product removed successfully!"
-            : "Product added successfully!"
+            ? "Đã xóa khỏi yêu thích!"
+            : "Đã thêm vào yêu thích!"
         );
       });
     }
@@ -52,7 +52,7 @@ const FavoriteButton = ({
         >
           {existingProduct ? (
             <Heart
-              fill="#3b9c3c"
+              fill="#1f1f1f"
               className="text-shop_light_green/80 group-hover:text-shop_light_green hoverEffect mt-.5 w-5 h-5"
             />
           ) : (

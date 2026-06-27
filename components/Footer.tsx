@@ -29,7 +29,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <SubTitle className="mb-4">Quick Links</SubTitle>
+            <SubTitle className="mb-4">Liên kết nhanh</SubTitle>
             <ul className="space-y-3">
               {quickLinksData?.map((item) => (
                 <li key={item?.title}>
@@ -45,7 +45,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <SubTitle className="mb-4">Categories</SubTitle>
+            <SubTitle className="mb-4">Danh mục</SubTitle>
             <ul className="space-y-3">
               {categoriesData?.map((item) => (
                 <li key={item?.title}>

@@ -7,9 +7,7 @@ import CartIcon from "./CartIcon";
 import FavoriteButton from "./FavoriteButton";
 import SignIn from "./SignIn";
 import MobileMenu from "./MobileMenu";
-import AuthMenu from "./AuthMenu";
-import Link from "next/link";
-import { Logs } from "lucide-react";
+import UserMenu from "./UserMenu";
 import { getMyOrders } from "@/lib/repositories/commerce.repository";
 import { getCurrentUser } from "@/lib/auth/server";
 
@@ -41,31 +39,18 @@ const Header = async () => {
             <SearchBar />
             <CartIcon />
             <FavoriteButton />
-
-            {user && (
-              <Link
-                href={"/orders"}
-                className="group relative hover:text-shop_light_green hoverEffect"
-              >
-                <Logs />
-                <span className="absolute -top-1 -right-1 bg-shop_btn_dark_green text-white h-3.5 w-3.5 rounded-full text-xs font-semibold flex items-center justify-center">
-                  {orders?.length ? orders?.length : 0}
-                </span>
-              </Link>
-            )}
           </div>
 
-          {user?.role === "ADMIN" && (
-            <Link
-              href="/admin"
-              className="hidden sm:inline-flex text-xs uppercase font-semibold tracking-wide hover:text-shop_light_green hoverEffect"
-            >
-              Admin
-            </Link>
-          )}
-
-          <div className="w-auto sm:w-[152px] flex justify-end">
-            {user ? <AuthMenu fullName={user.fullName} /> : <SignIn />}
+          <div className="flex justify-end">
+            {user ? (
+              <UserMenu
+                fullName={user.fullName}
+                role={user.role}
+                ordersCount={orders?.length ?? 0}
+              />
+            ) : (
+              <SignIn />
+            )}
           </div>
         </div>
       </Container>

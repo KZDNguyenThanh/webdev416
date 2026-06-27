@@ -7,7 +7,12 @@ import {
 } from "@/actions/createCheckoutSession";
 import AddressSelector from "@/components/AddressSelector";
 import Container from "@/components/Container";
-import NoAccess from "@/components/NoAccess";
+import GuestCheckoutForm, {
+  emptyGuestInfo,
+  validateGuestInfo,
+  type GuestErrors,
+  type GuestInfo,
+} from "@/components/GuestCheckoutForm";
 import PaymentDialog from "@/components/PaymentDialog";
 import PriceFormatter from "@/components/PriceFormatter";
 import Title from "@/components/Title";
@@ -33,6 +38,8 @@ const CheckoutPage = () => {
   const [selectedAddress, setSelectedAddress] = useState<AddressDTO | null>(
     null,
   );
+  const [guestInfo, setGuestInfo] = useState<GuestInfo>(emptyGuestInfo);
+  const [guestErrors, setGuestErrors] = useState<GuestErrors>({});
   const [loading, setLoading] = useState(false);
   const [payment, setPayment] = useState<{
     orderNumber: string;
@@ -66,6 +73,23 @@ const CheckoutPage = () => {
     setAddresses((prev) => [address, ...prev]);
     setSelectedAddress(address);
   };
+  const handleAddressUpdated = (updated: AddressDTO) => {
+    setAddresses((prev) =>
+      prev.map((a) =>
+        a.id === updated.id ? updated : updated.default ? { ...a, default: false } : a,
+      ),
+    );
+    setSelectedAddress((cur) => (cur?.id === updated.id ? updated : cur));
+  };
+  const handleAddressDeleted = (id: string) => {
+    setAddresses((prev) => {
+      const next = prev.filter((a) => a.id !== id);
+      setSelectedAddress((cur) =>
+        cur && cur.id !== id ? cur : next.find((a) => a.default) ?? next[0] ?? null,
+      );
+      return next;
+    });
+  };
 
   const product = buyNowItem?.product;
   const quantity = buyNowItem?.quantity ?? 1;
@@ -76,18 +100,45 @@ const CheckoutPage = () => {
 
   const handlePlaceOrder = async () => {
     if (!buyNowItem) return;
-    if (!selectedAddress) {
-      toast.error("Vui lòng chọn địa chỉ giao hàng.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const metadata: Metadata = {
+
+    let metadata: Metadata;
+    if (isSignedIn) {
+      if (!selectedAddress) {
+        toast.error("Vui lòng chọn địa chỉ giao hàng.");
+        return;
+      }
+      metadata = {
         customerName: user?.fullName ?? "Unknown",
         customerEmail: user?.email ?? "Unknown",
         userId: user?.id,
         addressId: selectedAddress.id,
       };
+    } else {
+      const errors = validateGuestInfo(guestInfo);
+      setGuestErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        toast.error("Vui lòng kiểm tra lại thông tin giao hàng.");
+        return;
+      }
+      metadata = {
+        customerName: guestInfo.name.trim(),
+        customerEmail: guestInfo.email.trim(),
+        address: {
+          id: "",
+          name: guestInfo.name.trim(),
+          phone: guestInfo.phone.trim(),
+          email: guestInfo.email.trim() || null,
+          address: guestInfo.address.trim(),
+          city: guestInfo.city.trim(),
+          state: null,
+          zip: null,
+          default: false,
+        },
+      };
+    }
+
+    setLoading(true);
+    try {
       const result = await createCheckoutSession([buyNowItem], metadata);
       clearBuyNowItem();
       setPayment({
@@ -102,10 +153,6 @@ const CheckoutPage = () => {
       setLoading(false);
     }
   };
-
-  if (!authLoading && !isSignedIn) {
-    return <NoAccess />;
-  }
 
   if (!product) {
     return null;
@@ -136,12 +183,22 @@ const CheckoutPage = () => {
               </div>
               <PriceFormatter amount={totalPrice} className="font-bold" />
             </div>
-            <AddressSelector
-              addresses={addresses}
-              selected={selectedAddress}
-              onSelect={setSelectedAddress}
-              onCreated={handleAddressCreated}
-            />
+            {authLoading ? null : isSignedIn ? (
+              <AddressSelector
+                addresses={addresses}
+                selected={selectedAddress}
+                onSelect={setSelectedAddress}
+                onCreated={handleAddressCreated}
+                onUpdated={handleAddressUpdated}
+                onDeleted={handleAddressDeleted}
+              />
+            ) : (
+              <GuestCheckoutForm
+                value={guestInfo}
+                onChange={setGuestInfo}
+                errors={guestErrors}
+              />
+            )}
           </div>
           <div className="lg:col-span-1">
             <div className="w-full bg-white p-6 rounded-lg border">

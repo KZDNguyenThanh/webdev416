@@ -11,6 +11,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
 import { prisma } from "@/lib/prisma";
+import {
+  getHomeBanners,
+  HOME_BANNERS_KEY,
+  type BannerItem,
+} from "@/lib/banners";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -136,7 +141,10 @@ function isUploadFile(value: FormDataEntryValue | null): value is File {
   return value instanceof File && value.size > 0;
 }
 
-async function saveUploadedImage(file: File, folder: "products" | "brands") {
+async function saveUploadedImage(
+  file: File,
+  folder: "products" | "brands" | "banners",
+) {
   const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
   await mkdir(uploadDir, { recursive: true });
 
@@ -236,6 +244,135 @@ export async function createProductAction(formData: FormData) {
 
   revalidatePath("/admin/products");
   revalidatePath("/admin/dashboard");
+}
+
+export interface BulkProductResult {
+  created: number;
+  failed: number;
+  errors: string[];
+}
+
+export async function createProductsBulkAction(
+  formData: FormData,
+): Promise<BulkProductResult> {
+  const admin = await requireAdmin();
+
+  const rowCount = Number(formData.get("rowCount") || 0);
+  const result: BulkProductResult = { created: 0, failed: 0, errors: [] };
+  const createdIds: string[] = [];
+
+  for (let i = 0; i < rowCount; i += 1) {
+    const name = getFormString(formData, `name_${i}`);
+    const slugInput = getFormString(formData, `slug_${i}`);
+    const priceRaw = formData.get(`price_${i}`);
+    const imageFiles = formData
+      .getAll(`images_${i}`)
+      .filter((item): item is File => isUploadFile(item));
+    const imageUrls = getFormString(formData, `imageUrls_${i}`)
+      .split(",")
+      .map((url) => url.trim())
+      .filter(Boolean);
+
+    // Skip rows the admin left completely blank.
+    const isBlank =
+      !name &&
+      !slugInput &&
+      (priceRaw === null || String(priceRaw).trim() === "") &&
+      imageFiles.length === 0 &&
+      imageUrls.length === 0;
+    if (isBlank) continue;
+
+    const price = Number(priceRaw || 0);
+    if (!name || Number.isNaN(price) || price < 0) {
+      result.failed += 1;
+      result.errors.push(`Dòng ${i + 1}: thiếu tên hoặc giá không hợp lệ`);
+      continue;
+    }
+
+    const discount = Number(formData.get(`discount_${i}`) || 0);
+    const stock = Number(formData.get(`stock_${i}`) || 0);
+    const description = getFormString(formData, `description_${i}`) || null;
+    const brandId = getFormString(formData, `brandId_${i}`) || null;
+    const status = enumValue(
+      String(formData.get(`status_${i}`) || ""),
+      Object.values(ProductStatus),
+    );
+    const isFeatured = String(formData.get(`isFeatured_${i}`) || "") === "on";
+    const categoryIds = formData
+      .getAll(`categoryIds_${i}`)
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+
+    const slug = slugInput ? toSlug(slugInput) : toSlug(name);
+
+    try {
+      const product = await prisma.product.create({
+        data: {
+          name,
+          slug,
+          description,
+          price,
+          discount: Number.isNaN(discount) ? 0 : discount,
+          stock: Number.isNaN(stock) ? 0 : stock,
+          status,
+          isFeatured,
+          brandId,
+        },
+      });
+
+      if (categoryIds.length > 0) {
+        await prisma.productCategory.createMany({
+          data: categoryIds.map((categoryId) => ({
+            productId: product.id,
+            categoryId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      const uploadedUrls = await Promise.all(
+        imageFiles.map((file) => saveUploadedImage(file, "products")),
+      );
+      const allImageUrls = [...imageUrls, ...uploadedUrls];
+      if (allImageUrls.length > 0) {
+        await prisma.productImage.createMany({
+          data: allImageUrls.map((imageUrl, index) => ({
+            productId: product.id,
+            imageUrl,
+            position: index,
+          })),
+        });
+      }
+
+      createdIds.push(product.id);
+      result.created += 1;
+    } catch (error) {
+      result.failed += 1;
+      const message =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+          ? `slug "${slug}" đã tồn tại`
+          : "lỗi khi tạo sản phẩm";
+      result.errors.push(`Dòng ${i + 1} (${name}): ${message}`);
+    }
+  }
+
+  if (result.created > 0) {
+    await writeAuditLog({
+      actorUserId: admin.id,
+      action: "PRODUCT_BULK_CREATE",
+      entityType: "PRODUCT",
+      data: {
+        created: result.created,
+        failed: result.failed,
+        ids: createdIds,
+      },
+    });
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/dashboard");
+  }
+
+  return result;
 }
 
 export async function updateProductAction(formData: FormData) {
@@ -363,9 +500,10 @@ export async function createBrandAction(formData: FormData) {
   }
 
   const slug = slugInput ? toSlug(slugInput) : toSlug(title);
+  const imageUrlInput = getFormString(formData, "imageUrl") || null;
   const imageUrl = isUploadFile(imageFile)
     ? await saveUploadedImage(imageFile, "brands")
-    : null;
+    : imageUrlInput;
 
   const brand = await prisma.brand.create({
     data: {
@@ -402,9 +540,10 @@ export async function updateBrandAction(formData: FormData) {
   }
 
   const slug = slugInput ? toSlug(slugInput) : toSlug(title);
+  const imageUrlInput = getFormString(formData, "imageUrl");
   const nextImageUrl = isUploadFile(imageFile)
     ? await saveUploadedImage(imageFile, "brands")
-    : undefined;
+    : imageUrlInput || undefined;
 
   await prisma.brand.update({
     where: { id },
@@ -776,6 +915,123 @@ export async function removeSettingAction(formData: FormData) {
   });
 
   revalidatePath("/admin/settings");
+}
+
+async function writeBannerItems(items: BannerItem[]) {
+  await prisma.setting.upsert({
+    where: { key: HOME_BANNERS_KEY },
+    update: { value: { items } },
+    create: { key: HOME_BANNERS_KEY, value: { items } },
+  });
+}
+
+export async function addBannersAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const imageFiles = formData
+    .getAll("images")
+    .filter((item): item is File => isUploadFile(item));
+  const urlList = getFormString(formData, "imageUrls")
+    .split(/[\n,]+/)
+    .map((url) => url.trim())
+    .filter(Boolean);
+
+  const uploadedUrls = await Promise.all(
+    imageFiles.map((file) => saveUploadedImage(file, "banners")),
+  );
+  const newImageUrls = [...uploadedUrls, ...urlList];
+
+  if (newImageUrls.length === 0) {
+    throw new Error("Vui lòng chọn file hoặc nhập link ảnh");
+  }
+
+  const existing = await getHomeBanners();
+  const newItems: BannerItem[] = newImageUrls.map((imageUrl) => ({
+    id: randomUUID(),
+    imageUrl,
+    link: "",
+    alt: "",
+  }));
+
+  await writeBannerItems([...existing, ...newItems]);
+
+  await writeAuditLog({
+    actorUserId: admin.id,
+    action: "BANNER_ADD",
+    entityType: "BANNER",
+    data: { added: newItems.length },
+  });
+
+  revalidatePath("/admin/banners");
+  revalidatePath("/");
+}
+
+export async function updateBannerAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const id = getFormString(formData, "id");
+  if (!id) throw new Error("Banner id is required");
+
+  const link = getFormString(formData, "link");
+  const alt = getFormString(formData, "alt");
+
+  const items = await getHomeBanners();
+  const next = items.map((item) =>
+    item.id === id ? { ...item, link, alt } : item,
+  );
+
+  await writeBannerItems(next);
+
+  await writeAuditLog({
+    actorUserId: admin.id,
+    action: "BANNER_UPDATE",
+    entityType: "BANNER",
+    entityId: id,
+  });
+
+  revalidatePath("/admin/banners");
+  revalidatePath("/");
+}
+
+export async function deleteBannerAction(formData: FormData) {
+  const admin = await requireAdmin();
+
+  const id = getFormString(formData, "id");
+  if (!id) throw new Error("Banner id is required");
+
+  const items = await getHomeBanners();
+  await writeBannerItems(items.filter((item) => item.id !== id));
+
+  await writeAuditLog({
+    actorUserId: admin.id,
+    action: "BANNER_DELETE",
+    entityType: "BANNER",
+    entityId: id,
+  });
+
+  revalidatePath("/admin/banners");
+  revalidatePath("/");
+}
+
+export async function moveBannerAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = getFormString(formData, "id");
+  const dir = getFormString(formData, "dir");
+  if (!id) throw new Error("Banner id is required");
+
+  const items = await getHomeBanners();
+  const index = items.findIndex((item) => item.id === id);
+  if (index === -1) return;
+
+  const target = dir === "up" ? index - 1 : index + 1;
+  if (target < 0 || target >= items.length) return;
+
+  [items[index], items[target]] = [items[target], items[index]];
+  await writeBannerItems(items);
+
+  revalidatePath("/admin/banners");
+  revalidatePath("/");
 }
 
 export async function signOutAdminArea() {
