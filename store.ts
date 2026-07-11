@@ -17,11 +17,20 @@ interface StoreState {
   getSubTotalPrice: () => number;
   getItemCount: (productId: string) => number;
   getGroupedItems: () => CartItem[];
-  // "Mua ngay" (Buy now): a transient single item used by the /checkout page.
-  // Not persisted to localStorage — it only lives for the current navigation.
-  buyNowItem: CartItem | null;
-  setBuyNowItem: (product: ProductDTO, quantity?: number) => void;
-  clearBuyNowItem: () => void;
+  // Cart modal: opened by "Mua ngay" after dropping the item into the cart.
+  // Transient UI state — not persisted to localStorage.
+  cartModalOpen: boolean;
+  openCartModal: () => void;
+  closeCartModal: () => void;
+  // Account that owns the currently loaded cart/favorites. `null` = guest.
+  // Used by CartSync to detect login/logout and keep data private per account.
+  ownerId: string | null;
+  setOwner: (ownerId: string | null) => void;
+  // Overwrite cart + favorites in one shot (used when loading server state).
+  replaceState: (next: {
+    items: CartItem[];
+    favoriteProduct: ProductDTO[];
+  }) => void;
   //   // favorite
   favoriteProduct: ProductDTO[];
   addToFavorite: (product: ProductDTO) => Promise<void>;
@@ -93,10 +102,13 @@ const useStore = create<StoreState>()(
         return item ? item.quantity : 0;
       },
       getGroupedItems: () => get().items,
-      buyNowItem: null,
-      setBuyNowItem: (product, quantity = 1) =>
-        set({ buyNowItem: { product, quantity } }),
-      clearBuyNowItem: () => set({ buyNowItem: null }),
+      cartModalOpen: false,
+      openCartModal: () => set({ cartModalOpen: true }),
+      closeCartModal: () => set({ cartModalOpen: false }),
+      ownerId: null,
+      setOwner: (ownerId) => set({ ownerId }),
+      replaceState: ({ items, favoriteProduct }) =>
+        set({ items, favoriteProduct }),
       addToFavorite: (product: ProductDTO) => {
         return new Promise<void>((resolve) => {
           set((state: StoreState) => {
@@ -131,6 +143,7 @@ const useStore = create<StoreState>()(
       partialize: (state) => ({
         items: state.items,
         favoriteProduct: state.favoriteProduct,
+        ownerId: state.ownerId,
       }),
       // Pre-refactor data used the Sanity shape (`_id`, `slug:{current}`,
       // `images:[{asset:{url}}]`). It's incompatible with ProductDTO, so drop

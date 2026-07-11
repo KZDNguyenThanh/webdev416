@@ -3,6 +3,7 @@
 import {
   createCheckoutSession,
   Metadata,
+  type PaymentMethod,
 } from "@/actions/createCheckoutSession";
 import AddressSelector from "@/components/AddressSelector";
 import Container from "@/components/Container";
@@ -14,11 +15,20 @@ import GuestCheckoutForm, {
   type GuestInfo,
 } from "@/components/GuestCheckoutForm";
 import PaymentDialog from "@/components/PaymentDialog";
+import PaymentMethodSelector from "@/components/PaymentMethodSelector";
 import PriceFormatter from "@/components/PriceFormatter";
 import ProductSideMenu from "@/components/ProductSideMenu";
 import QuantityButtons from "@/components/QuantityButtons";
 import Title from "@/components/Title";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -28,6 +38,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { AddressDTO } from "@/lib/types";
 import { getMyAddresses } from "@/actions/catalog";
+import { SHIPPING_FEE } from "@/lib/constants/shipping";
 import { getImageUrl } from "@/lib/image";
 import useStore from "@/store";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -46,6 +57,10 @@ const CartPage = () => {
     resetCart,
   } = useStore();
   const [loading, setLoading] = useState(false);
+  // Giỏ hàng nằm trong localStorage (zustand persist) nên server luôn render
+  // rỗng còn client có dữ liệu sau khi rehydrate → lệch hydration. Chờ mount
+  // xong mới render nội dung thật để server và client khớp nhau.
+  const [mounted, setMounted] = useState(false);
   const groupedItems = useStore((state) => state.getGroupedItems());
   const { isSignedIn, user, loading: authLoading } = useAuthUser();
   const [addresses, setAddresses] = useState<AddressDTO[]>([]);
@@ -54,6 +69,8 @@ const CartPage = () => {
   );
   const [guestInfo, setGuestInfo] = useState<GuestInfo>(emptyGuestInfo);
   const [guestErrors, setGuestErrors] = useState<GuestErrors>({});
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("BANK");
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [payment, setPayment] = useState<{
     orderNumber: string;
     amount: number;
@@ -76,6 +93,9 @@ const CartPage = () => {
   };
   useEffect(() => {
     fetchAddresses();
+  }, []);
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   const handleAddressCreated = (address: AddressDTO) => {
@@ -100,13 +120,9 @@ const CartPage = () => {
     });
   };
   const handleResetCart = () => {
-    const confirmed = window.confirm(
-      "Bạn có chắc muốn xóa toàn bộ giỏ hàng?",
-    );
-    if (confirmed) {
-      resetCart();
-      toast.success("Đã xóa giỏ hàng!");
-    }
+    resetCart();
+    toast.success("Đã xóa giỏ hàng!");
+    setConfirmClearOpen(false);
   };
 
   const handleCheckout = async () => {
@@ -148,7 +164,17 @@ const CartPage = () => {
 
     setLoading(true);
     try {
-      const result = await createCheckoutSession(groupedItems, metadata);
+      const result = await createCheckoutSession(
+        groupedItems,
+        metadata,
+        paymentMethod,
+      );
+      // COD không cần bước chuyển khoản — vào thẳng trang cảm ơn. Giữ loading để
+      // tránh bấm lại trong lúc điều hướng.
+      if (result.paymentMethod === "COD") {
+        window.location.href = result.redirectUrl;
+        return;
+      }
       setPayment({
         orderNumber: result.orderNumber,
         amount: result.totalAmount,
@@ -161,8 +187,20 @@ const CartPage = () => {
       setLoading(false);
     }
   };
+  if (!mounted) {
+    return (
+      <div className="bg-brand-bg pb-52 md:pb-10">
+        <Container>
+          <div className="flex items-center justify-center py-20 text-lightText">
+            Đang tải giỏ hàng…
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-gray-50 pb-52 md:pb-10">
+    <div className="bg-brand-bg pb-52 md:pb-10">
       <Container>
         {groupedItems?.length ? (
           <>
@@ -261,7 +299,7 @@ const CartPage = () => {
                       );
                     })}
                     <Button
-                      onClick={handleResetCart}
+                      onClick={() => setConfirmClearOpen(true)}
                       className="m-5 font-semibold"
                       variant="destructive"
                     >
@@ -286,16 +324,25 @@ const CartPage = () => {
                             amount={getSubTotalPrice() - getTotalPrice()}
                           />
                         </div>
+                        <div className="flex items-center justify-between">
+                          <span>Phí vận chuyển</span>
+                          <PriceFormatter amount={SHIPPING_FEE} />
+                        </div>
                         <Separator />
                         <div className="flex items-center justify-between font-semibold text-lg">
                           <span>Tổng cộng</span>
                           <PriceFormatter
-                            amount={getTotalPrice()}
+                            amount={getTotalPrice() + SHIPPING_FEE}
                             className="text-lg font-bold text-black"
                           />
                         </div>
+                        <PaymentMethodSelector
+                          value={paymentMethod}
+                          onChange={setPaymentMethod}
+                        />
                         <Button
-                          className="w-full rounded-full font-semibold tracking-wide hoverEffect"
+                          variant="signal"
+                          className="w-full rounded-full tracking-wide hoverEffect"
                           size="lg"
                           disabled={loading}
                           onClick={handleCheckout}
@@ -330,30 +377,38 @@ const CartPage = () => {
                     <h2>Tóm tắt đơn hàng</h2>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span>SubTotal</span>
+                        <span>Tạm tính</span>
                         <PriceFormatter amount={getSubTotalPrice()} />
                       </div>
                       <div className="flex items-center justify-between">
-                        <span>Discount</span>
+                        <span>Giảm giá</span>
                         <PriceFormatter
                           amount={getSubTotalPrice() - getTotalPrice()}
                         />
                       </div>
+                      <div className="flex items-center justify-between">
+                        <span>Phí vận chuyển</span>
+                        <PriceFormatter amount={SHIPPING_FEE} />
+                      </div>
                       <Separator />
                       <div className="flex items-center justify-between font-semibold text-lg">
-                        <span>Total</span>
+                        <span>Tổng cộng</span>
                         <PriceFormatter
-                          amount={getTotalPrice()}
+                          amount={getTotalPrice() + SHIPPING_FEE}
                           className="text-lg font-bold text-black"
                         />
                       </div>
+                      <PaymentMethodSelector
+                        value={paymentMethod}
+                        onChange={setPaymentMethod}
+                      />
                       <Button
                         className="w-full rounded-full font-semibold tracking-wide hoverEffect"
                         size="lg"
                         disabled={loading}
                         onClick={handleCheckout}
                       >
-                        {loading ? "Please wait..." : "Place Order"}
+                        {loading ? "Vui lòng đợi…" : "Đặt hàng"}
                       </Button>
                     </div>
                   </div>
@@ -372,6 +427,28 @@ const CartPage = () => {
           redirectUrl={payment.redirectUrl}
         />
       )}
+      <Dialog open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Xóa toàn bộ giỏ hàng?</DialogTitle>
+            <DialogDescription>
+              Tất cả sản phẩm trong giỏ sẽ bị xóa. Bạn không thể hoàn tác thao
+              tác này.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmClearOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button variant="destructive" onClick={handleResetCart}>
+              Xóa giỏ hàng
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

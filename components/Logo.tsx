@@ -13,14 +13,14 @@ const Logo = ({
     <Link href={"/"} className="inline-flex">
       <h2
         className={cn(
-          "text-2xl text-shop_dark_green font-black tracking-wider uppercase hover:text-shop_light_green hoverEffect group font-sans",
+          "font-archivo text-2xl font-black uppercase tracking-wider text-white hoverEffect group",
           className,
         )}
       >
         KEY
         <span
           className={cn(
-            "text-shop_light_green group-hover:text-shop_dark_green hoverEffect",
+            "text-signal group-hover:text-white hoverEffect",
             spanDesign,
           )}
         >

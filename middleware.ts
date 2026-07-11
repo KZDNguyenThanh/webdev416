@@ -8,16 +8,18 @@ import { getAuthSecret } from "@/lib/auth/secret";
 const protectedRoutes = [
   "/orders",
   "/wishlist",
-  "/cart",
-  "/checkout",
   "/admin",
 ];
 
+// Public exceptions that would otherwise match a protected prefix above.
+// Guest order lookup lives under /orders but must stay open to non-logged-in users.
+const publicRoutes = ["/orders/track"];
+
 export default async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
+  const isPublic = publicRoutes.some((route) => pathname.startsWith(route));
+  const isProtected =
+    !isPublic && protectedRoutes.some((route) => pathname.startsWith(route));
   const isAdminRoute = pathname.startsWith("/admin");
 
   if (!isProtected) {

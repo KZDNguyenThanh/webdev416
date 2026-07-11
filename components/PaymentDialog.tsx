@@ -9,6 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  ACCOUNT_HOLDER,
+  ACCOUNT_NUMBER,
+  BANK_NAME,
+} from "@/lib/constants/payment";
+import { buildVietQrUrl } from "@/lib/payment/vietqr";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -19,10 +25,6 @@ interface Props {
   amount: number;
   redirectUrl: string;
 }
-
-const BANK_NAME = "Vietcombank";
-const ACCOUNT_NUMBER = "0888699289";
-const ACCOUNT_HOLDER = "CONG TY KEYNITY";
 
 const InfoRow = ({
   label,
@@ -83,12 +85,13 @@ const PaymentDialog = ({ open, orderNumber, amount, redirectUrl }: Props) => {
         </DialogHeader>
 
         <div className="flex justify-center">
-          {/* QR code placeholder — drop the real image at public/payment-qr.png.
-              Plain <img> so we can swap to a fallback box via onError if the file
-              is missing (next/image can't gracefully recover from a 404). */}
+          {/* Dynamic VietQR: the image already encodes the amount + transfer note,
+              so scanning fills in the exact sum and content. Plain <img> so we can
+              fall back to a placeholder box via onError if the image can't load
+              (e.g. offline) — next/image can't gracefully recover from that. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/payment-qr.png"
+            src={buildVietQrUrl({ amount, addInfo: transferContent })}
             alt="QR chuyển khoản"
             className="h-48 w-48 rounded-md border object-contain"
             onError={(e) => {

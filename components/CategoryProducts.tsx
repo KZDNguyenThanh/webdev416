@@ -43,12 +43,12 @@ const CategoryProducts = ({ categories, slug }: Props) => {
 
   return (
     <div className="py-5 flex flex-col md:flex-row items-start gap-5">
-      <div className="flex flex-col md:min-w-40 border">
+      <div className="flex flex-col md:min-w-40 rounded-lg border border-brand-muted overflow-hidden">
         {categories?.map((item) => (
           <Button
             onClick={() => handleCategoryChange(item?.slug)}
             key={item?.id}
-            className={`bg-transparent border-0 p-0  rounded-none text-darkColor shadow-none hover:bg-shop_orange hover:text-white font-semibold hoverEffect border-b last:border-b-0 transition-colors capitalize ${item?.slug === currentSlug && "bg-shop_orange text-white border-shop_orange"}`}
+            className={`bg-transparent border-0 p-0 rounded-none text-brand-dark shadow-none hover:bg-brand-dark hover:text-white font-semibold hoverEffect border-b border-brand-muted last:border-b-0 transition-colors capitalize ${item?.slug === currentSlug && "bg-brand-dark text-white"}`}
           >
             <p className="w-full text-left px-2">{item?.title}</p>
           </Button>
@@ -56,8 +56,8 @@ const CategoryProducts = ({ categories, slug }: Props) => {
       </div>
       <div className="flex-1">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-10 min-h-80 space-y-4 text-center bg-gray-100 rounded-lg w-full">
-            <div className="flex items-center space-x-2 text-blue-600">
+          <div className="flex flex-col items-center justify-center py-10 min-h-80 space-y-4 text-center bg-brand-soft rounded-lg w-full">
+            <div className="flex items-center space-x-2 text-brand-deep">
               <Loader2 className="w-5 h-5 animate-spin" />
               <span>Đang tải sản phẩm…</span>
             </div>

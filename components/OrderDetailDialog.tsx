@@ -99,7 +99,20 @@ const OrderDetailDialog: React.FC<OrderDetailsDialogProps> = ({
           </TableBody>
         </Table>
         <div className="mt-4 text-right flex items-center justify-end">
-          <div className="w-44 flex flex-col gap-1">
+          <div className="w-52 flex flex-col gap-1">
+            {order?.amountDiscount !== 0 && (
+              <div className="w-full flex items-center justify-between">
+                <strong>Tạm tính: </strong>
+                <PriceFormatter
+                  amount={
+                    (order?.totalPrice as number) -
+                    (order?.shippingFee as number) +
+                    (order?.amountDiscount as number)
+                  }
+                  className="text-black font-bold"
+                />
+              </div>
+            )}
             {order?.amountDiscount !== 0 && (
               <div className="w-full flex items-center justify-between">
                 <strong>Giảm giá: </strong>
@@ -109,18 +122,13 @@ const OrderDetailDialog: React.FC<OrderDetailsDialogProps> = ({
                 />
               </div>
             )}
-            {order?.amountDiscount !== 0 && (
-              <div className="w-full flex items-center justify-between">
-                <strong>Tạm tính: </strong>
-                <PriceFormatter
-                  amount={
-                    (order?.totalPrice as number) +
-                    (order?.amountDiscount as number)
-                  }
-                  className="text-black font-bold"
-                />
-              </div>
-            )}
+            <div className="w-full flex items-center justify-between">
+              <strong>Phí vận chuyển: </strong>
+              <PriceFormatter
+                amount={order?.shippingFee}
+                className="text-black font-bold"
+              />
+            </div>
             <div className="w-full flex items-center justify-between">
               <strong>Tổng cộng: </strong>
               <PriceFormatter

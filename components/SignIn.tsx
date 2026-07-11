@@ -19,7 +19,7 @@ const SignIn = () => {
     <div className="text-sm flex items-center justify-end">
       <Link
         href={loginHref}
-        className="inline-flex items-center rounded-md border border-gray-300 px-3 py-1.5 font-semibold hover:text-shop_light_green hover:border-shop_light_green hoverEffect"
+        className="inline-flex items-center rounded-md border border-white/20 px-3 py-1.5 font-semibold text-white hover:text-signal hover:border-signal hoverEffect"
       >
         Đăng nhập
       </Link>

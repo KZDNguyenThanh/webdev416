@@ -16,7 +16,7 @@ const HomeBanner = async () => {
   return (
     <Link
       href={"/shop"}
-      className="block rounded-lg overflow-hidden"
+      className="block rounded-xl overflow-hidden"
       aria-label="Khám phá bàn phím cơ KEYNITY"
     >
       <div className="relative w-full">

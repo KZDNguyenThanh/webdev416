@@ -47,7 +47,7 @@ const UserMenu = ({ fullName, role, ordersCount = 0 }: UserMenuProps) => {
       <PopoverTrigger asChild>
         <button
           aria-label="Tài khoản"
-          className="h-8 w-8 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center hover:bg-brand-dark hoverEffect"
+          className="h-8 w-8 rounded-full bg-signal text-ink text-xs font-bold flex items-center justify-center hover:bg-signal/80 hoverEffect"
         >
           {label}
         </button>

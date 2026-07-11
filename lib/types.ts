@@ -55,6 +55,7 @@ export type CategoryDTO = {
   rangeStart: number | null;
   featured: boolean;
   imageUrl: string | null;
+  previewImageUrl: string | null;
   productCount: number;
 };
 
@@ -96,6 +97,7 @@ export type OrderDTO = {
   email: string;
   totalPrice: number;
   amountDiscount: number;
+  shippingFee: number;
   currency: string;
   status: string;
   orderDate: string | null;

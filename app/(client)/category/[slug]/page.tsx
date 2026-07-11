@@ -1,6 +1,6 @@
 import CategoryProducts from "@/components/CategoryProducts";
 import Container from "@/components/Container";
-import Title from "@/components/Title";
+import PageHero from "@/components/PageHero";
 import { getCategories } from "@/lib/data/queries";
 import React from "react";
 
@@ -11,15 +11,16 @@ const CategoryPage = async ({
 }) => {
   const categories = await getCategories();
   const { slug } = await params;
+  const category = categories.find((c) => c.slug === slug);
+
   return (
-    <div className="py-10">
-      <Container>
-        <Title>
-          Products by Category:{" "}
-          <span className="font-bold text-green-600 capitalize tracking-wide">
-            {slug && slug}
-          </span>
-        </Title>
+    <div>
+      <PageHero
+        eyebrow="Danh mục"
+        title={category?.title ?? slug}
+        subtitle="Khám phá các sản phẩm được tuyển chọn trong danh mục này."
+      />
+      <Container className="py-10">
         <CategoryProducts categories={categories} slug={slug} />
       </Container>
     </div>

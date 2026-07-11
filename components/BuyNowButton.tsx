@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { ProductDTO } from "@/lib/types";
 import useStore from "@/store";
 import { Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface Props {
   product: ProductDTO;
@@ -13,14 +13,19 @@ interface Props {
 }
 
 const BuyNowButton = ({ product, className }: Props) => {
-  const router = useRouter();
-  const setBuyNowItem = useStore((state) => state.setBuyNowItem);
+  const addItem = useStore((state) => state.addItem);
+  const getItemCount = useStore((state) => state.getItemCount);
+  const openCartModal = useStore((state) => state.openCartModal);
   const isOutOfStock = product?.stock === 0;
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    setBuyNowItem(product, 1);
-    router.push("/checkout");
+    if (product.stock > getItemCount(product.id)) {
+      addItem(product);
+    } else {
+      toast.error("Không thể thêm quá số lượng còn lại");
+    }
+    openCartModal();
   };
 
   return (

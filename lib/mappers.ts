@@ -115,9 +115,18 @@ type RawCategory = {
   featured: boolean;
   imageUrl: string | null;
   _count?: { products?: number };
+  products?: { product: { images: { imageUrl: string }[] } }[];
 };
 
 export function toCategoryDTO(category: RawCategory): CategoryDTO {
+  const productImages = (category.products ?? [])
+    .map((link) => link.product?.images?.[0]?.imageUrl)
+    .filter((url): url is string => Boolean(url));
+  const previewImageUrl =
+    productImages.length > 0
+      ? productImages[Math.floor(Math.random() * productImages.length)]
+      : null;
+
   return {
     id: category.id,
     title: category.title,
@@ -126,6 +135,7 @@ export function toCategoryDTO(category: RawCategory): CategoryDTO {
     rangeStart: category.rangeStart ?? null,
     featured: Boolean(category.featured),
     imageUrl: category.imageUrl ?? null,
+    previewImageUrl,
     productCount: category._count?.products ?? 0,
   };
 }
@@ -181,6 +191,7 @@ type RawOrder = {
   customerEmail: string;
   totalAmount: DecimalLike;
   discountAmount: DecimalLike;
+  shippingFee: DecimalLike;
   currency: string;
   status: string;
   orderedAt: Date | string | null;
@@ -198,6 +209,7 @@ export function toOrderDTO(order: RawOrder): OrderDTO {
     email: order.customerEmail,
     totalPrice: toNumber(order.totalAmount),
     amountDiscount: toNumber(order.discountAmount),
+    shippingFee: toNumber(order.shippingFee),
     currency: order.currency,
     status: String(order.status || "").toLowerCase(),
     orderDate: toIso(order.orderedAt),

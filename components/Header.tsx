@@ -19,8 +19,8 @@ const Header = async () => {
   }
 
   return (
-    <header className="sticky top-0 z-50 py-5 bg-white/70 backdrop-blur-md">
-      <Container className="flex items-center justify-between text-lightColor md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-ink/80 py-5 text-zinc-300 backdrop-blur-md">
+      <Container className="flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6">
         <div className="flex items-center gap-2.5 justify-start md:hidden">
           <MobileMenu />
           <Logo />

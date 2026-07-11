@@ -78,7 +78,9 @@ const AddressForm = ({ onSaved, editing, trigger }: Props) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Sửa địa chỉ" : "Thêm địa chỉ mới"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Sửa địa chỉ" : "Thêm địa chỉ mới"}
+          </DialogTitle>
           <DialogDescription>
             Nhập địa chỉ và thông tin liên lạc để giao hàng.
           </DialogDescription>
@@ -90,7 +92,6 @@ const AddressForm = ({ onSaved, editing, trigger }: Props) => {
               id="addr-name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Nguyễn Văn A"
             />
           </div>
           <div className="grid gap-1.5">
@@ -100,7 +101,6 @@ const AddressForm = ({ onSaved, editing, trigger }: Props) => {
               type="tel"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="0901234567"
             />
           </div>
           <div className="grid gap-1.5">
@@ -118,7 +118,6 @@ const AddressForm = ({ onSaved, editing, trigger }: Props) => {
               id="addr-city"
               value={form.city}
               onChange={(e) => setForm({ ...form, city: e.target.value })}
-              placeholder="Hồ Chí Minh"
             />
           </div>
           <div className="flex items-center gap-2">

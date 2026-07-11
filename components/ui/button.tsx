@@ -10,7 +10,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-shop_btn_dark_green/80 text-white font-semibold shadow hover:bg-shop_btn_dark_green hoverEffect",
+          "bg-brand text-white font-semibold shadow hover:bg-brand-dark hoverEffect",
+        signal:
+          "bg-signal text-ink font-bold uppercase tracking-wide shadow hover:bg-signal/85 hoverEffect",
         destructive:
           "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:

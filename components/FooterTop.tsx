@@ -9,51 +9,51 @@ interface ContactItemData {
 
 const data: ContactItemData[] = [
   {
-    title: "Visit Us",
-    subtitle: "HCM City, Vietnam",
+    title: "Ghé thăm",
+    subtitle: "TP. Hồ Chí Minh, Việt Nam",
     icon: (
-      <MapPin className="h-5 w-5 text-gray-600 transition-colors group-hover:text-primary" />
+      <MapPin className="h-5 w-5 text-zinc-400 transition-colors group-hover:text-signal" />
     ),
   },
   {
-    title: "Call Us",
+    title: "Gọi cho chúng tôi",
     subtitle: "+84 914 618 305",
     icon: (
-      <Phone className="h-5 w-5 text-gray-600 transition-colors group-hover:text-primary" />
+      <Phone className="h-5 w-5 text-zinc-400 transition-colors group-hover:text-signal" />
     ),
   },
   {
-    title: "Working Hours",
-    subtitle: "Mon - Sun: 7:00 AM - 5:00 PM",
-    icon: (
-      <Clock className="h-5 w-5 text-gray-600 transition-colors group-hover:text-primary" />
-    ),
-  },
-  {
-    title: "Email Us",
+    title: "Email",
     subtitle: "keynity.shop@gmail.com",
     icon: (
-      <Mail className="h-5 w-5 text-gray-600 transition-colors group-hover:text-primary" />
+      <Mail className="h-5 w-5 text-zinc-400 transition-colors group-hover:text-signal" />
+    ),
+  },
+  {
+    title: "Giờ làm việc",
+    subtitle: "T2 - CN: 7:00 - 17:00",
+    icon: (
+      <Clock className="h-5 w-5 text-zinc-400 transition-colors group-hover:text-signal" />
     ),
   },
 ];
 
 const FooterTop = () => {
   return (
-    <div className="grid grid-cols-1 gap-4 border-b py-8 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 border-b border-white/10 py-8 sm:grid-cols-2 xl:grid-cols-4">
       {data?.map((item, index) => (
         <div
           key={index}
-          className="group flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-sm"
+          className="group flex items-start gap-3 rounded-xl border border-white/10 bg-ink-soft p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-signal/40 hover:shadow-sm"
         >
-          <span className="mt-0.5 rounded-full bg-gray-100 p-2">
+          <span className="mt-0.5 rounded-full bg-white/5 p-2">
             {item?.icon}
           </span>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-black">
+            <h3 className="text-sm font-semibold text-white transition-colors group-hover:text-signal">
               {item?.title}
             </h3>
-            <p className="mt-1 text-sm text-gray-600 transition-colors group-hover:text-gray-800">
+            <p className="mt-1 text-sm text-zinc-400 transition-colors group-hover:text-zinc-300">
               {item?.subtitle}
             </p>
           </div>

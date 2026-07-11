@@ -70,7 +70,9 @@ const Field = ({
       ) : null}
     </Label>
     {children}
-    {error ? <span className="text-xs text-red-600">{error}</span> : null}
+    {error ? (
+      <span className="text-[13px] sm:text-xs text-red-600">{error}</span>
+    ) : null}
   </div>
 );
 

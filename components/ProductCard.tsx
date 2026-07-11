@@ -34,8 +34,8 @@ const ProductCard = ({ product }: { product: ProductDTO }) => {
   const statusBadge = statusStyles[productStatus];
 
   return (
-    <div className="text-sm border-[1px] rounded-md border-darkBlue/20 group bg-white">
-      <div className="relative group overflow-hidden bg-shop_light_bg">
+    <div className="text-sm border rounded-md border-brand-muted group bg-white transition-all duration-300 hover:-translate-y-1 hover:border-signal/60 hover:shadow-lg hover:shadow-brand-dark/10">
+      <div className="relative group overflow-hidden bg-brand-bg">
         {product?.images && (
           <Link href={`/product/${product?.slug}`}>
             <Image
@@ -44,7 +44,7 @@ const ProductCard = ({ product }: { product: ProductDTO }) => {
               width={500}
               height={500}
               priority
-              className={`w-full h-64 object-contain overflow-hidden transition-transform bg-shop_light_bg duration-500 
+              className={`w-full h-64 object-contain overflow-hidden transition-transform bg-brand-bg duration-500
               ${product?.stock !== 0 ? "group-hover:scale-105" : "opacity-50"}`}
             />
           </Link>
@@ -60,11 +60,13 @@ const ProductCard = ({ product }: { product: ProductDTO }) => {
       </div>
       <div className="p-3 flex flex-col gap-2">
         {product?.categories && (
-          <p className="uppercase line-clamp-1 text-xs font-medium text-lightText">
+          <p className="uppercase line-clamp-1 text-[13px] sm:text-xs font-medium text-lightText">
             {product.categories.map((cat) => cat.title).join(", ")}
           </p>
         )}
-        <Title className="text-sm line-clamp-1">{product?.name}</Title>
+        <Title className="text-[15px] leading-snug line-clamp-2 sm:text-sm">
+          {product?.name}
+        </Title>
         <div className="flex items-center gap-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, index) => (
@@ -78,7 +80,7 @@ const ProductCard = ({ product }: { product: ProductDTO }) => {
               />
             ))}
           </div>
-          <p className="text-lightText text-xs tracking-wide">
+          <p className="text-lightText text-[13px] sm:text-xs tracking-wide">
             {reviewCount === 0 ? "Chưa có đánh giá" : `${reviewCount} đánh giá`}
           </p>
         </div>
@@ -95,7 +97,7 @@ const ProductCard = ({ product }: { product: ProductDTO }) => {
         <PriceView
           price={product?.price}
           discount={product?.discount}
-          className="text-sm"
+          className="text-base sm:text-sm"
         />
         <div className="flex flex-col gap-2">
           <AddToCartButton product={product} className="rounded-full" />

@@ -9,10 +9,6 @@ import { getProductBySlug } from "@/lib/data/queries";
 import { StarIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import React from "react";
-import { FaRegQuestionCircle } from "react-icons/fa";
-import { FiShare2 } from "react-icons/fi";
-import { RxBorderSplit } from "react-icons/rx";
-import { TbTruckDelivery } from "react-icons/tb";
 
 const SingleProductPage = async ({
   params,
@@ -36,11 +32,13 @@ const SingleProductPage = async ({
       )}
       <div className="w-full md:w-1/2 flex flex-col gap-5">
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold">{product?.name}</h2>
-          <p className="text-sm text-gray-600 tracking-wide">
+          <h2 className="display-title text-2xl text-brand-dark">
+            {product?.name}
+          </h2>
+          <p className="text-[15px] leading-relaxed text-gray-600 tracking-wide sm:text-sm">
             {product?.description}
           </p>
-          <div className="flex items-center gap-0.5 text-xs">
+          <div className="flex items-center gap-0.5 text-sm">
             {[...Array(5)].map((_, index) => (
               <StarIcon
                 key={index}
@@ -72,24 +70,6 @@ const SingleProductPage = async ({
         </div>
         <ProductCharacteristics product={product} />
         <ProductReviews product={product} slug={slug} />
-        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-b-gray-200 py-5 -mt-2">
-          <div className="flex items-center gap-2 text-sm text-black hover:text-red-600 hoverEffect">
-            <RxBorderSplit className="text-lg" />
-            <p>So sánh màu</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-black hover:text-red-600 hoverEffect">
-            <FaRegQuestionCircle className="text-lg" />
-            <p>Đặt câu hỏi</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-black hover:text-red-600 hoverEffect">
-            <TbTruckDelivery className="text-lg" />
-            <p>Giao hàng & Đổi trả</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-black hover:text-red-600 hoverEffect">
-            <FiShare2 className="text-lg" />
-            <p>Chia sẻ</p>
-          </div>
-        </div>
       </div>
     </Container>
   );

@@ -22,13 +22,13 @@ const SideMenu: FC<SidebarProps> = ({ isOpen, onClose }) => {
     >
       <div
         ref={sidebarRef}
-        className="min-w-72 max-w-96 bg-black h-screen p-10 border-r border-r-shop_light_green flex flex-col gap-6"
+        className="min-w-72 max-w-96 bg-black h-screen p-10 border-r border-r-signal/40 flex flex-col gap-6"
       >
         <div className="flex items-center justify-between gap-5">
           <Logo className="text-white" spanDesign="group-hover:text-white" />
           <button
             onClick={onClose}
-            className="hover:text-shop_light_green hoverEffect"
+            className="hover:text-signal hoverEffect"
           >
             <X />
           </button>
@@ -39,8 +39,8 @@ const SideMenu: FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Link
               href={item?.href}
               key={item?.title}
-              className={`hover:text-shop_light_green hoverEffect ${
-                pathname === item?.href && "text-white"
+              className={`hover:text-signal hoverEffect ${
+                pathname === item?.href && "text-signal"
               }`}
             >
               {item?.title}

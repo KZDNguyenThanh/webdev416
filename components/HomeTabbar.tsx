@@ -15,7 +15,7 @@ const HomeTabbar = ({ selectedTab, onTabSelect }: Props) => {
             <button
               onClick={() => onTabSelect(item?.value)}
               key={item?.title}
-              className={`border border-shop_light_green/30 px-4 py-1.5 md:px-6 md:py-2 rounded-full hover:bg-shop_light_green hover:border-shop_light_green hover:text-white hoverEffect ${selectedTab === item?.value ? "bg-shop_light_green text-white border-shop_light_green" : "bg-shop_light_green/10"}`}
+              className={`border px-4 py-1.5 md:px-6 md:py-2 rounded-full hover:bg-brand-dark hover:border-brand-dark hover:text-white hoverEffect ${selectedTab === item?.value ? "bg-brand-dark text-white border-brand-dark" : "bg-brand-soft border-brand-muted text-brand-deep"}`}
             >
               {item?.title}
             </button>
@@ -24,7 +24,7 @@ const HomeTabbar = ({ selectedTab, onTabSelect }: Props) => {
       </div>
       <Link
         href={"/shop"}
-        className="border border-darkColor px-4 py-1 rounded-full hover:bg-shop_light_green hover:text-white hover:border-shop_light_green hoverEffect"
+        className="border border-brand-dark px-4 py-1 rounded-full hover:bg-brand-dark hover:text-white hover:border-brand-dark hoverEffect"
       >
         Xem tất cả
       </Link>

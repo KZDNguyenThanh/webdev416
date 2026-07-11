@@ -75,7 +75,7 @@ const LoginPageContent = () => {
     <Container className="py-12">
       <Card className="max-w-md mx-auto">
         <CardHeader>
-          <CardTitle>Login</CardTitle>
+          <CardTitle>Đăng nhập</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -88,36 +88,36 @@ const LoginPageContent = () => {
             />
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="Mật khẩu"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
             />
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Đang đăng nhập…" : "Đăng nhập"}
             </Button>
           </form>
           <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-wide text-lightColor">
-            <span className="h-px flex-1 bg-gray-200" />
-            <span>or</span>
-            <span className="h-px flex-1 bg-gray-200" />
+            <span className="h-px flex-1 bg-brand-muted" />
+            <span>hoặc</span>
+            <span className="h-px flex-1 bg-brand-muted" />
           </div>
           <button
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="inline-flex w-full items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold hover:bg-shop_light_bg hoverEffect disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex w-full items-center justify-center rounded-md border border-brand-muted px-4 py-2 text-sm font-semibold hover:bg-brand-soft hoverEffect disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {googleLoading ? "Opening Google..." : "Continue with Google"}
+            {googleLoading ? "Đang mở Google…" : "Tiếp tục với Google"}
           </button>
           <p className="text-sm text-center mt-4 text-lightColor">
-            Don&apos;t have an account?{" "}
+            Chưa có tài khoản?{" "}
             <Link
               href={`/register?next=${encodeURIComponent(nextPath)}`}
-              className="text-shop_btn_dark_green font-semibold"
+              className="font-semibold text-brand-dark hover:text-signal hoverEffect"
             >
-              Register
+              Tạo tài khoản
             </Link>
           </p>
         </CardContent>

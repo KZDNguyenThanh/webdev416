@@ -4,7 +4,7 @@ import useStore from "@/store";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { motion } from "motion/react";
-import { Check, Home, Package, ShoppingBag } from "lucide-react";
+import { Check, Home, PackageSearch, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 const SuccessPageContent = () => {
@@ -18,57 +18,68 @@ const SuccessPageContent = () => {
     }
   }, [orderNumber, resetCart]);
   return (
-    <div className="py-5 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mx-4">
+    <div className="cine-surface relative flex min-h-[80vh] items-center justify-center overflow-hidden px-4 py-16">
+      {/* atmosphere */}
+      <div className="hero-grid absolute inset-0" aria-hidden />
+      <div className="scanlines cine-vignette absolute inset-0" aria-hidden />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl flex flex-col gap-8 shadow-2xl p-6 max-w-xl w-full text-center"
+        className="tech-corner relative z-10 flex w-full max-w-xl flex-col gap-8 rounded-2xl border border-white/10 bg-ink-soft/80 p-8 text-center backdrop-blur-sm"
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+          className="signal-pulse mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-signal"
         >
-          <Check className="text-white w-10 h-10" />
+          <Check className="h-10 w-10 text-ink" strokeWidth={3} />
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Order Confirmed!
-        </h1>
-        <div className="space-y-4 mb-4 text-left">
-          <p className="text-gray-700">
-            Thank you for your purchase. We&apos;re processing your order and
-            will ship it soon. A confirmation email with your order details will
-            be sent to your inbox shortly.
-          </p>
-          <p className="text-gray-700">
-            Order Number:{" "}
-            <span className="text-black font-semibold">{orderNumber}</span>
-          </p>
+        <div className="space-y-3">
+          <p className="hud-label text-signal">// Order confirmed</p>
+          <h1 className="display-title text-3xl text-white">
+            Đặt hàng thành công!
+          </h1>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <p className="text-sm leading-6 text-zinc-400">
+          Cảm ơn bạn đã mua hàng. Chúng tôi đang xử lý đơn và sẽ giao sớm nhất
+          có thể. Dùng mã đơn bên dưới để tra cứu trạng thái đơn hàng.
+        </p>
+
+        {orderNumber && (
+          <div className="rounded-lg border border-white/10 bg-black/30 py-3">
+            <p className="hud-label text-zinc-500">Mã đơn hàng</p>
+            <p className="mt-1 font-mono text-lg font-bold tracking-widest text-signal">
+              {orderNumber}
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link
             href="/"
-            className="flex items-center justify-center px-4 py-3 font-semibold bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-md"
+            className="flex items-center justify-center rounded-lg bg-signal px-4 py-3 text-sm font-bold uppercase tracking-wide text-ink transition-colors duration-300 hover:bg-signal/85"
           >
-            <Home className="w-5 h-5 mr-2" />
-            Home
+            <Home className="mr-2 h-5 w-5" />
+            Trang chủ
           </Link>
           <Link
-            href="/orders"
-            className="flex items-center justify-center px-4 py-3 font-semibold bg-lightGreen text-black border border-lightGreen rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-md"
+            href={`/orders/track${orderNumber ? `?orderNumber=${orderNumber}` : ""}`}
+            className="flex items-center justify-center rounded-lg border border-white/20 px-4 py-3 text-sm font-semibold text-white transition-colors duration-300 hover:border-signal hover:text-signal"
           >
-            <Package className="w-5 h-5 mr-2" />
-            Orders
+            <PackageSearch className="mr-2 h-5 w-5" />
+            Tra cứu đơn
           </Link>
           <Link
-            href="/"
-            className="flex items-center justify-center px-4 py-3 font-semibold bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-md"
+            href="/shop"
+            className="flex items-center justify-center rounded-lg border border-white/20 px-4 py-3 text-sm font-semibold text-white transition-colors duration-300 hover:border-signal hover:text-signal"
           >
-            <ShoppingBag className="w-5 h-5 mr-2" />
-            Shop
+            <ShoppingBag className="mr-2 h-5 w-5" />
+            Mua sắm
           </Link>
         </div>
       </motion.div>
@@ -78,7 +89,7 @@ const SuccessPageContent = () => {
 
 const SuccessPage = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Đang tải…</div>}>
       <SuccessPageContent />
     </Suspense>
   );

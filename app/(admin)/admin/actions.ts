@@ -2,6 +2,7 @@
 
 import {
   OrderStatus,
+  PaymentProvider,
   PaymentStatus,
   Prisma,
   ProductStatus,
@@ -753,6 +754,7 @@ export async function updateOrderStatusAction(formData: FormData) {
         id: true,
         status: true,
         paymentStatus: true,
+        paymentProvider: true,
         stockRestoredAt: true,
         items: {
           select: {
@@ -767,22 +769,41 @@ export async function updateOrderStatusAction(formData: FormData) {
       throw new Error("Order not found");
     }
 
-    if (order.paymentStatus !== PaymentStatus.PAID) {
+    const isCod = order.paymentProvider === PaymentProvider.COD;
+
+    // Đơn COD được giao trước khi thu tiền nên không yêu cầu PAID; đơn còn lại
+    // giữ ràng buộc cũ (chỉ đổi trạng thái khi đã thanh toán).
+    if (!isCod && order.paymentStatus !== PaymentStatus.PAID) {
       throw new Error(
         "Order status can only be changed when payment status is PAID",
       );
     }
 
+    // COD: khi đã giao tới tay khách thì coi như thu được tiền → đánh dấu PAID.
+    const collectCod = isCod && status === OrderStatus.DELIVERED;
+    const nextPaymentStatus = collectCod
+      ? PaymentStatus.PAID
+      : order.paymentStatus;
+
     const nextOrder = await transaction.order.update({
       where: { id },
-      data: { status },
+      data: collectCod
+        ? { status, paymentStatus: PaymentStatus.PAID }
+        : { status },
     });
+
+    if (collectCod) {
+      await transaction.payment.updateMany({
+        where: { orderId: id },
+        data: { status: PaymentStatus.PAID, paidAt: new Date() },
+      });
+    }
 
     const restoredStock = await restoreOrderStockIfNeeded(
       transaction,
       order,
       status,
-      order.paymentStatus,
+      nextPaymentStatus,
     );
 
     return { nextOrder, restoredStock };

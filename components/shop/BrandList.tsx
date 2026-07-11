@@ -1,6 +1,5 @@
 import type { BrandDTO } from "@/lib/types";
 import React from "react";
-import Title from "../Title";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
 
@@ -12,9 +11,9 @@ interface Props {
 
 const BrandList = ({ brands, selectedBrand, setSelectedBrand }: Props) => {
   return (
-    <div className="w-full bg-white p-5">
-      <Title className="text-base font-black">Thương hiệu</Title>
-      <RadioGroup value={selectedBrand || ""} className="mt-2 space-y-1">
+    <div>
+      <h3 className="filter-section-title">Thương hiệu</h3>
+      <RadioGroup value={selectedBrand || ""} className="mt-3 space-y-1.5">
         {brands?.map((brand) => (
           <div
             key={brand?.id}
@@ -23,25 +22,21 @@ const BrandList = ({ brands, selectedBrand, setSelectedBrand }: Props) => {
           >
             <RadioGroupItem
               value={brand?.slug}
-              id={brand?.slug}
+              id={`brand-${brand?.slug}`}
               className="rounded-sm"
             />
             <Label
-              htmlFor={brand?.slug}
-              className={`${selectedBrand === brand?.slug ? "font-semibold text-shop_dark_green" : "font-normal"}`}
+              htmlFor={`brand-${brand?.slug}`}
+              className={`text-sm ${
+                selectedBrand === brand?.slug
+                  ? "font-semibold text-brand-dark"
+                  : "font-normal text-lightColor"
+              }`}
             >
               {brand?.title}
             </Label>
           </div>
         ))}
-        {selectedBrand && (
-          <button
-            onClick={() => setSelectedBrand(null)}
-            className="text-sm font-medium mt-2 underline underline-offset-2 decoration-[1px] hover:text-brand-dark hoverEffect text-left"
-          >
-            Bỏ chọn
-          </button>
-        )}
       </RadioGroup>
     </div>
   );

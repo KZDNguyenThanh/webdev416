@@ -40,23 +40,23 @@ const FavoriteButton = ({
     <>
       {!showProduct ? (
         <Link href={"/wishlist"} className="group relative">
-          <Heart className="w-5 h-5 hover:text-shop_light_green hoverEffect" />
-          <span className="absolute -top-1 -right-1 bg-shop_dark_green text-white h-3.5 w-3.5 rounded-full text-xs font-semibold flex items-center justify-center">
+          <Heart className="w-5 h-5 hover:text-signal hoverEffect" />
+          <span className="absolute -top-1 -right-1 bg-signal text-ink h-3.5 w-3.5 rounded-full text-xs font-semibold flex items-center justify-center">
             {favoriteProduct?.length ? favoriteProduct?.length : 0}
           </span>
         </Link>
       ) : (
         <button
           onClick={handleFavorite}
-          className="group relative hover:text-shop_light_green hoverEffect border border-shop_light_green/80 hover:border-shop_light_green p-1.5 rounded-sm"
+          className="group relative hover:text-brand-dark hoverEffect border border-brand-muted hover:border-brand-dark p-1.5 rounded-sm"
         >
           {existingProduct ? (
             <Heart
               fill="#1f1f1f"
-              className="text-shop_light_green/80 group-hover:text-shop_light_green hoverEffect mt-.5 w-5 h-5"
+              className="text-brand-deep group-hover:text-brand-dark hoverEffect mt-.5 w-5 h-5"
             />
           ) : (
-            <Heart className="text-shop_light_green/80 group-hover:text-shop_light_green hoverEffect mt-.5 w-5 h-5" />
+            <Heart className="text-brand-deep group-hover:text-brand-dark hoverEffect mt-.5 w-5 h-5" />
           )}
         </button>
       )}

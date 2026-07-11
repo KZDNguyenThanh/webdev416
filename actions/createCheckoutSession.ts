@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { generateOrderCode } from "@/lib/orderCode";
+import { SHIPPING_FEE } from "@/lib/constants/shipping";
+import { sendOrderConfirmationEmail } from "@/lib/email/orderConfirmation";
 import type { AddressDTO } from "@/lib/types";
 import { CartItem } from "@/store";
 
@@ -18,15 +20,19 @@ export interface GroupedCartItems {
   quantity: number;
 }
 
+export type PaymentMethod = "BANK" | "COD";
+
 export interface CheckoutResult {
   orderNumber: string;
   totalAmount: number;
   redirectUrl: string;
+  paymentMethod: PaymentMethod;
 }
 
 export async function createCheckoutSession(
   items: GroupedCartItems[],
   metadata: Metadata,
+  paymentMethod: PaymentMethod = "BANK",
 ): Promise<CheckoutResult> {
   try {
     if (!items?.length) {
@@ -80,10 +86,11 @@ export async function createCheckoutSession(
 
     // Pricing model: `price` is what the customer actually pays; `discount` is a
     // percentage used only to surface a higher struck-through original price.
-    // So the payable total is the sum of line totals, the subtotal is the implied
-    // pre-discount original, and the discount amount is the difference. All values
-    // are whole VND.
-    const totalAmount = resolvedItems.reduce(
+    // `goodsTotal` is the sum of line totals (payable for goods), the subtotal is
+    // the implied pre-discount original, and the discount amount is the difference.
+    // A flat shipping fee is then added on top to get the final payable total.
+    // All values are whole VND.
+    const goodsTotal = resolvedItems.reduce(
       (sum, item) => sum + item.lineTotal,
       0,
     );
@@ -94,8 +101,12 @@ export async function createCheckoutSession(
         0,
       ),
     );
-    const discountAmount = Math.max(subtotal - totalAmount, 0);
+    const discountAmount = Math.max(subtotal - goodsTotal, 0);
+    const shippingFee = SHIPPING_FEE;
+    const totalAmount = goodsTotal + shippingFee;
     const orderNumber = generateOrderCode();
+    // COD ghi nhận provider riêng; chuyển khoản QR vẫn dùng MOCK như trước.
+    const provider = paymentMethod === "COD" ? "COD" : "MOCK";
 
     await prisma.$transaction(async (transaction) => {
       let addressId: string | undefined;
@@ -138,11 +149,12 @@ export async function createCheckoutSession(
           customerEmail: normalizedEmail,
           subtotal,
           discountAmount,
+          shippingFee,
           totalAmount,
           currency: "VND",
           status: "PENDING",
           paymentStatus: "PENDING",
-          paymentProvider: "MOCK",
+          paymentProvider: provider,
           items: {
             create: resolvedItems.map(
               ({ productId, productName, unitPrice, quantity, lineTotal }) => ({
@@ -156,7 +168,7 @@ export async function createCheckoutSession(
           },
           payments: {
             create: {
-              provider: "MOCK",
+              provider,
               status: "PENDING",
               amount: totalAmount,
               currency: "VND",
@@ -194,10 +206,37 @@ export async function createCheckoutSession(
       return order;
     });
 
+    // Email is best-effort: a delivery failure (or missing SMTP config) must
+    // never roll back an order that already committed. Quan trọng hơn: KHÔNG await
+    // ở đây — mở kết nối SMTP mất vài giây sẽ làm nút "Đặt hàng" treo lâu cho cả
+    // COD lẫn chuyển khoản. Gửi nền (fire-and-forget) và nuốt lỗi để phản hồi đặt
+    // hàng trả về ngay. (App self-host nên tiến trình vẫn sống để gửi xong.)
+    if (normalizedEmail) {
+      void sendOrderConfirmationEmail({
+        to: normalizedEmail,
+        orderNumber,
+        customerName: metadata.customerName || "Quý khách",
+        items: resolvedItems.map((item) => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          lineTotal: item.lineTotal,
+        })),
+        subtotal,
+        discountAmount,
+        shippingFee,
+        totalAmount,
+        paymentMethod,
+      }).catch((emailError) => {
+        console.error("Order confirmation email failed", emailError);
+      });
+    }
+
     return {
       orderNumber,
       totalAmount,
       redirectUrl: `/success?orderNumber=${orderNumber}`,
+      paymentMethod,
     };
   } catch (error) {
     console.error("Error creating internal order", error);

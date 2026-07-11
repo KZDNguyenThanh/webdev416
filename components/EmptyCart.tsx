@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function EmptyCart() {
   return (
-    <div className="py-10 md:py-20 bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
+    <div className="py-10 md:py-20 bg-brand-bg flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -46,10 +46,10 @@ export default function EmptyCart() {
         </motion.div>
 
         <div className="text-center space-y-4">
-          <h2 className="text-3xl font-bold text-gray-800">
-            Your cart is empty!
+          <h2 className="display-title text-3xl text-brand-dark">
+            Giỏ hàng của bạn trống!
           </h2>
-          <p className="text-gray-600">
+          <p className="text-lightText">
             Khám phá ngay những mẫu bàn phím cơ và phụ kiện tại KEYNITY!
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function EmptyCart() {
             href="/"
             className="block bg-darkColor/5 border border-darkColor/20 text-center py-2.5 rounded-full text-sm font-semibold tracking-wide hover:border-darkColor hover:bg-darkColor hover:text-white hoverEffect"
           >
-            Discover Products
+            Khám phá sản phẩm
           </Link>
         </div>
       </motion.div>

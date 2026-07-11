@@ -29,8 +29,8 @@ const ProductSideMenu = ({
       addToFavorite(product).then(() => {
         toast.success(
           existingProduct
-            ? "Product removed successfully!"
-            : "Product added successfully!"
+            ? "Đã xóa khỏi yêu thích!"
+            : "Đã thêm vào yêu thích!"
         );
       });
     }

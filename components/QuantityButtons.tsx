@@ -34,17 +34,17 @@ const QuantityButtons = ({ product, className }: Props) => {
   };
 
   return (
-    <div className={cn("flex items-center gap-1 pb-1 text-base", className)}>
+    <div className={cn("flex items-center gap-1.5 pb-1 text-base", className)}>
       <Button
         onClick={handleRemoveProduct}
         variant="outline"
         size="icon"
         disabled={itemCount === 0 || isOutOfStock}
-        className="w-6 h-6 border-[1px] hover:bg-shop_dark_green/20 hoverEffect"
+        className="h-8 w-8 border-[1px] hover:bg-brand-soft hoverEffect sm:h-6 sm:w-6"
       >
         <Minus />
       </Button>
-      <span className="font-semibold text-sm w-6 text-center text-darkColor">
+      <span className="w-8 text-center font-semibold text-base text-darkColor sm:w-6 sm:text-sm">
         {itemCount}
       </span>
       <Button
@@ -52,7 +52,7 @@ const QuantityButtons = ({ product, className }: Props) => {
         variant="outline"
         size="icon"
         disabled={isOutOfStock}
-        className="w-6 h-6 border-[1px] hover:bg-shop_dark_green/20 hoverEffect"
+        className="h-8 w-8 border-[1px] hover:bg-brand-soft hoverEffect sm:h-6 sm:w-6"
       >
         <Plus />
       </Button>

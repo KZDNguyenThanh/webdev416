@@ -44,7 +44,12 @@ export default async function AdminOrdersPage() {
           <CardTitle>Recent Orders</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {orders.map((order) => (
+          {orders.map((order) => {
+            const isCod = order.paymentProvider === "COD";
+            // COD cho phép đổi trạng thái đơn trước khi PAID; còn lại vẫn khóa
+            // tới khi thanh toán xong.
+            const canEditStatus = order.paymentStatus === "PAID" || isCod;
+            return (
             <div
               key={order.id}
               className="rounded-lg border border-darkBlue/10 p-4 space-y-4"
@@ -60,6 +65,15 @@ export default async function AdminOrdersPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   <span
+                    className={`rounded-full px-2 py-1 font-semibold ${
+                      isCod
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-sky-100 text-sky-700"
+                    }`}
+                  >
+                    {isCod ? "COD" : "Chuyển khoản"}
+                  </span>
+                  <span
                     className={`rounded-full px-2 py-1 font-semibold ${paymentStatusClass(order.paymentStatus)}`}
                   >
                     PS: {order.paymentStatus}
@@ -67,7 +81,7 @@ export default async function AdminOrdersPage() {
                   <span
                     className={`rounded-full px-2 py-1 font-semibold ${orderStatusClass(order.status)}`}
                   >
-                    OS: {order.paymentStatus === "PAID" ? order.status : "-"}
+                    OS: {canEditStatus ? order.status : "-"}
                   </span>
                 </div>
               </div>
@@ -110,10 +124,8 @@ export default async function AdminOrdersPage() {
                   <input type="hidden" name="id" value={order.id} />
                   <select
                     name="status"
-                    defaultValue={
-                      order.paymentStatus === "PAID" ? order.status : ""
-                    }
-                    disabled={order.paymentStatus !== "PAID"}
+                    defaultValue={canEditStatus ? order.status : ""}
+                    disabled={!canEditStatus}
                     className="h-9 border rounded-md px-2 text-sm"
                   >
                     <option value="">Select Order Status</option>
@@ -122,11 +134,7 @@ export default async function AdminOrdersPage() {
                     <option value="DELIVERED">DELIVERED</option>
                     <option value="CANCELLED">CANCELLED</option>
                   </select>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    disabled={order.paymentStatus !== "PAID"}
-                  >
+                  <Button type="submit" variant="outline" disabled={!canEditStatus}>
                     Save Order Status
                   </Button>
                 </form>
@@ -184,7 +192,8 @@ export default async function AdminOrdersPage() {
                 </div>
               </details>
             </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
     </div>

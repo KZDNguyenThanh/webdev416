@@ -14,8 +14,18 @@ export async function getShopProducts(filters: {
   selectedBrand?: string | null;
   minPrice?: number;
   maxPrice?: number;
+  query?: string | null;
+  sort?: string | null;
 }): Promise<ProductDTO[]> {
   return getProductsByFilters(filters);
+}
+
+// Lightweight name search for the header search box's live suggestions.
+export async function searchProducts(query: string): Promise<ProductDTO[]> {
+  const trimmed = query?.trim();
+  if (!trimmed) return [];
+  const products = await getProductsByFilters({ query: trimmed });
+  return products.slice(0, 6);
 }
 
 export async function getCategoryProducts(

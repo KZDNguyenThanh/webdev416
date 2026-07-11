@@ -23,6 +23,19 @@ export async function getCategories(quantity?: number): Promise<CategoryDTO[]> {
         orderBy: { title: "asc" },
         include: {
           _count: { select: { products: true } },
+          products: {
+            select: {
+              product: {
+                select: {
+                  images: {
+                    orderBy: { position: "asc" },
+                    take: 1,
+                    select: { imageUrl: true },
+                  },
+                },
+              },
+            },
+          },
         },
       }),
     [],

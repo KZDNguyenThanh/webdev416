@@ -21,6 +21,8 @@ model User {
   updatedAt     DateTime   @updatedAt
   addresses     Address[]
   auditLogs     AuditLog[]
+  cartItems     CartItem[]
+  favorites     Favorite[]
   orders        Order[]
   productReviews ProductReview[]
   sessions      Session[]
@@ -79,6 +81,8 @@ model Product {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   orderItems  OrderItem[]
+  cartItems   CartItem[]
+  favorites   Favorite[]
   brand       Brand?            @relation(fields: [brandId], references: [id])
   categories  ProductCategory[]
   images      ProductImage[]
@@ -87,6 +91,32 @@ model Product {
   @@index([brandId])
   @@index([status])
   @@index([isFeatured])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
 }
 
 model ProductReview {
@@ -131,7 +161,7 @@ model ProductCategory {
 
 model Address {
   id        String   @id @default(cuid())
-  userId    String
+  userId    String?
   name      String
   email     String?
   phone     String?
@@ -142,7 +172,7 @@ model Address {
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders    Order[]
 
   @@index([userId])
@@ -158,6 +188,7 @@ model Order {
   status           OrderStatus     @default(PENDING)
   subtotal         Decimal         @db.Decimal(10, 2)
   discountAmount   Decimal         @default(0) @db.Decimal(10, 2)
+  shippingFee      Decimal         @default(0) @db.Decimal(10, 2)
   totalAmount      Decimal         @db.Decimal(10, 2)
   currency         String          @default("VND")
   paymentStatus    PaymentStatus   @default(PENDING)
@@ -337,6 +368,7 @@ enum PaymentStatus {
 enum PaymentProvider {
   MANUAL
   MOCK
+  COD
   STRIPE
   PAYPAL
   RAZORPAY
